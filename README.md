@@ -1,8 +1,7 @@
 # Stillpoint website
 
 Static site for **[Stillpoint](https://stillpointlab.dev)** — the open-source lab of
-[4rce.com](https://4rce.com) working on persistent standing-place restore for hybrid
-attention models.
+4rce.com working on persistent standing-place restore for hybrid attention models.
 
 Live at **[stillpointlab.dev](https://stillpointlab.dev)**, served by GitHub Pages from
 `main`. No build step: plain HTML, one self-hosted font, no JavaScript dependencies,
@@ -22,7 +21,8 @@ no trackers.
 python3 -m http.server 8765
 ```
 
-Then open http://localhost:8765/
+Then open <http://localhost:8765/>. There is nothing to build or install — the files
+are served exactly as they are deployed.
 
 ## Numbers on this site
 
@@ -31,15 +31,17 @@ run — currently the PIN-0001 hard suite of 2026-08-21 (12/12 pass). No project
 no illustrative benchmarks. If a number is not measured, it does not go on the page.
 
 The engineering behind those numbers — the LMCache patch, its explainer, and the
-verification suite — lives in [`dl4rce/stillpoint`](https://github.com/dl4rce/stillpoint),
-not here.
+verification suite — lives in the `dl4rce/stillpoint` repository, which is not yet
+public. Links to it from the site will resolve once it is published.
 
 ## Security
 
-- `.gitleaks.toml` — secret-scanning config for this repo
-- pre-commit hook — `gitleaks` on staged files
-- CI — `.github/workflows/gitleaks.yml` on every push and pull request
+- `.gitleaks.toml` — secret-scanning config, run in CI on every push and pull request
+  via `.github/workflows/gitleaks.yml`
 - Dependabot — security-only updates for GitHub Actions
+
+Contributors are encouraged to run `gitleaks` locally before committing; a pre-commit
+hook is not shipped in this repository, since Git does not distribute hooks on clone.
 
 ## Licence
 

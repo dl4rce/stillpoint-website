@@ -1,0 +1,11 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+*.pre-*
+*.pre-lab-pass
+.secops-backup/
+
+# Internal planning notes — not for the public site repo
+PROJECT.md

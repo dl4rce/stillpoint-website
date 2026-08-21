@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whitepaper outline — Stillpoint</title>
+    <meta name="description" content="Outline of the Stillpoint whitepaper: standing-place state for hybrid GDN models, exact-prefix warm first, LinearKV as research.">
+    <link rel="canonical" href="https://stillpointlab.dev/whitepaper.html">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
+    <style>
+        @font-face {
+            font-family: 'Press Start 2P';
+            src: url('fonts/PressStart2P-Regular.ttf') format('truetype');
+            font-display: swap;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --neon-green: #39ff14; --neon-cyan: #00fff7; --neon-magenta: #ff00ff;
+            --neon-yellow: #ffe600;
+            --dark: #0a0a0f; --dark-card: #101018; --border: #1a1a2e;
+            --text: #c0c0d0; --text-dim: #707085;
+            --pixel: 'Press Start 2P', ui-monospace, Menlo, Consolas, monospace;
+            --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--dark); color: var(--text); line-height: 1.7;
+        }
+        nav {
+            padding: 16px 24px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        nav .logo {
+            font-family: var(--pixel); font-size: 12px; color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan); text-decoration: none;
+        }
+        nav a { color: var(--text); text-decoration: none; font-size: 14px; }
+        nav a.back:hover { color: var(--neon-green); }
+        main { max-width: 720px; margin: 0 auto; padding: 60px 24px 80px; }
+        h1 {
+            font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--neon-magenta); margin-bottom: 12px;
+        }
+        .lede { color: var(--text-dim); margin-bottom: 28px; font-size: 15px; }
+        .soon {
+            font-family: var(--mono); font-size: 13px; color: var(--neon-yellow);
+            border: 1px dashed rgba(255,230,0,0.4); background: rgba(255,230,0,0.05);
+            border-radius: 8px; padding: 12px 16px; margin-bottom: 32px;
+        }
+        .card {
+            background: var(--dark-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 8px 8px 8px 0;
+        }
+        ol { padding: 8px 28px 16px 40px; }
+        li { margin: 16px 0; font-size: 15px; }
+        li strong { color: #fff; }
+        .result-card { padding: 24px 28px; }
+        .result-card h2 { font-size: 18px; margin-bottom: 14px; }
+        .result-card p { font-size: 15px; margin: 0 0 14px; }
+        .result-card ul { padding-left: 20px; margin: 0 0 14px; }
+        .result-card ul li { margin: 8px 0; }
+        .result-card code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 13px; color: var(--neon-cyan, #22d3ee);
+        }
+        .result-table {
+            width: 100%; border-collapse: collapse; margin: 4px 0 18px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+        }
+        .result-table th, .result-table td {
+            padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--border);
+        }
+        .result-table th:first-child, .result-table td:first-child { text-align: left; }
+        .result-table th {
+            color: var(--text-dim, #9aa4b2); font-weight: 600;
+            font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        .result-table tbody tr:last-child td { border-bottom: none; }
+        @media (max-width: 640px) {
+            .result-table { font-size: 11px; }
+            .result-table th, .result-table td { padding: 5px 4px; }
+        }
+        li span { color: var(--text-dim); display: block; font-size: 14px; }
+        a { color: var(--neon-cyan); }
+        footer {
+            border-top: 1px solid var(--border); padding: 32px 24px;
+            text-align: center; font-size: 13px; color: var(--text-dim);
+        }
+        footer a { color: var(--neon-cyan); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="logo" href="index.html">◉ STILLPOINT</a>
+        <a class="back" href="index.html">← Back</a>
+    </nav>
+    <main>
+        <h1>Whitepaper</h1>
+        <p class="lede">
+            Outline. PIN-0001 is green: GDN standing-place state now stores to disk and
+            restores across a full vLLM restart with the exact answer intact. The full
+            note is being written from that run.
+        </p>
+        <p class="soon">Full PDF: in writing. Headline result below; sections are the table of contents.</p>
+        <div class="card result-card" style="margin-bottom: 28px;">
+            <h2 style="margin-top:0;">PIN-0001 result — measured 2026-08-21</h2>
+            <p>
+                Qwen3-class 27B, vLLM + LMCache multiprocess, TP=2, speculative decoding on,
+                CPU L1 + disk L2. A random 24-hex key is buried inside a long document; the
+                context is stored, the engine is <strong>fully restarted</strong>, then the
+                same prefix is restored from disk and the key is asked for.
+            </p>
+            <table class="result-table">
+                <thead>
+                    <tr><th>Context</th><th>Restore wall</th><th>Cold wall</th><th>E2E&nbsp;×</th><th>Restore TTFT</th><th>Cold TTFT</th><th>TTFT&nbsp;×</th><th>Hit</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>5k</td><td>2.84 s</td><td>6.91 s</td><td>2.4×</td><td>1.76 s</td><td>6.20 s</td><td>3.5×</td><td>97.0%</td></tr>
+                    <tr><td>13k</td><td>4.11 s</td><td>16.29 s</td><td>4.0×</td><td>3.19 s</td><td>15.83 s</td><td>5.0×</td><td>98.8%</td></tr>
+                    <tr><td>26k</td><td>6.99 s</td><td>33.92 s</td><td>4.9×</td><td>6.19 s</td><td>33.48 s</td><td>5.4×</td><td>98.7%</td></tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><strong>Correctness:</strong> exact buried key, character-for-character, on every restore run.</li>
+                <li><strong>No cross-contamination:</strong> a never-stored context gets 0% hit and a clean cold prefill.</li>
+                <li><strong>Stability:</strong> 12/12 pass — multi-length restore, warm re-ask idempotence, cold control, and two independent repeatability cycles.</li>
+                <li><strong>TP-agnostic:</strong> the same patch verified at TP=2 (25:1 page geometry) and TP=1 on a different hybrid (17:1) — exact key, 95.4% hit, 0.72 s vs 1.53 s. The fix is geometry-driven, not configuration-driven.</li>
+            </ul>
+            <p>
+                E2E figures are total wall including answer generation. TTFT is the prefill the
+                restore actually replaces, and is the fairer measure of what was eliminated.
+            </p>
+            <p>
+                All three root causes were in LMCache 0.5.3, not vLLM: a layout misread that
+                persisted only 1 of 25 kernel pages per chunk, a variable-shadowing
+                <code>TypeError</code> that disguised failures as worker-timeout hangs, and
+                async host-buffer corruption from mutating shared metadata. The 4-file patch
+                is verified byte-for-byte against a pristine wheel.
+            </p>
+        </div>
+        <div class="card">
+            <ol>
+                <li>
+                    <strong>Problem.</strong>
+                    <span>Hosted prefix caches are best-effort and evaporate. Hybrid GDN models do not have a growing token-indexed KV for most layers — they have a recurrent state. CacheBlend-style recombination does not apply to that state.</span>
+                </li>
+                <li>
+                    <strong>Standing place.</strong>
+                    <span>After a prefix is read, the useful object to persist is the GDN recurrent snapshot plus the remaining full-attention KV — one place you stand, not a trail of footprints.</span>
+                </li>
+                <li>
+                    <strong>Product order.</strong>
+                    <span>First: lossless exact-prefix warm of hot docs (PIN-0002), keyed by token hash, salted per project. Second: LinearKV for shuffled RAG on hybrids (PIN-0003). Not CacheBlend on GDN pages.</span>
+                </li>
+                <li>
+                    <strong>Isolation.</strong>
+                    <span>Dedicated hardware. Verified today: a never-stored context gets 0% hit and a clean cold prefill — no cross-contamination. Planned for PIN-0002: a per-tenant salt in every cache key. Knowledge stays in the customer’s Git. Flaiwheel is a source of curated chunks, not a writer of vLLM KV.</span>
+                </li>
+                <li>
+                    <strong>What we will measure.</strong>
+                            <span>Exact-answer restore vs cold prefill, latency after disk restore, survival across a vLLM restart, and failure modes (NaN logits when MTP and LMCache disagree). <strong>Done for PIN-0001 — numbers above.</strong> Still to measure: PIN-0002 hot-doc packs under concurrency, and PIN-0003 LinearKV quality on shuffled RAG. No number on this site until it is measured on the pin hardware.</span>
+                </li>
+            </ol>
+        </div>
+        <p class="lede" style="margin-top: 28px;">
+            Working notes live in the <a href="https://github.com/dl4rce/stillpoint">GitHub repo</a>
+            as they land.
+        </p>
+    </main>
+    <footer>
+        <p>Stillpoint — an open-source lab by <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a></p>
+    </footer>
+</body>
+</html>

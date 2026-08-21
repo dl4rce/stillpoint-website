@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # SECURITY-ONLY: open-pull-requests-limit 0 skips routine version bumps.
+  # Dependabot still opens security-update PRs (exempt from the limit).
+  # This repo is static HTML — no npm/pip ecosystem.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      security-patches:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "fix(deps)"

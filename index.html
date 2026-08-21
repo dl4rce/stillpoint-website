@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stillpoint — Compile Knowledge Into the Model's Standing Place</title>
+    <meta name="description" content="Open lab: compile project knowledge into the recurrent state of a hybrid GDN model and restore it from disk. PIN-0001 is green — persistent restore across a full vLLM restart, 98.8% hit, up to 4.9x faster than cold prefill. Apache-2, by 4rce.com.">
+    <meta name="keywords" content="Stillpoint, GDN, Gated DeltaNet, Qwen3.8, LMCache, vLLM, persistent KV cache, prefix cache, LinearKV, hybrid LLM, recurrent state, AI agent memory, Flaiwheel">
+    <meta name="author" content="4rce.com Digital Technologies GmbH">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://stillpointlab.dev/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stillpointlab.dev/">
+    <meta property="og:title" content="Stillpoint — The Model's Standing Place">
+    <meta property="og:description" content="We don't cache replies. We compile your knowledge into the model's standing place so the agent doesn't pay to rediscover it. PIN-0001 green: persistent restore across a full restart, up to 4.9x faster than cold prefill.">
+    <meta property="og:site_name" content="Stillpoint">
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
+
+    <style>
+        @font-face {
+            font-family: 'Press Start 2P';
+            src: url('fonts/PressStart2P-Regular.ttf') format('truetype');
+            font-display: swap;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --neon-green: #39ff14;
+            --neon-cyan: #00fff7;
+            --neon-magenta: #ff00ff;
+            --neon-yellow: #ffe600;
+            --neon-orange: #ff6600;
+            --dark: #0a0a0f;
+            --dark-card: #101018;
+            --border: #1a1a2e;
+            --text: #c0c0d0;
+            --text-dim: #707085;
+            --pixel: 'Press Start 2P', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+            --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Courier New', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        canvas#starfield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .content { position: relative; z-index: 2; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 16px 24px;
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        nav .logo {
+            font-family: var(--pixel); font-size: 12px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+            text-decoration: none;
+        }
+        nav .links a {
+            color: var(--text); text-decoration: none; font-size: 14px;
+            margin-left: 22px; transition: color 0.2s;
+        }
+        nav .links a:hover { color: var(--neon-green); }
+        @media (max-width: 720px) {
+            nav { padding: 14px 16px; }
+            nav .links a { margin-left: 12px; font-size: 13px; }
+        }
+
+        section { padding: 96px 24px 56px; max-width: 960px; margin: 0 auto; }
+
+        .hero {
+            text-align: center; padding-top: 160px; padding-bottom: 72px;
+            min-height: 88vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .hero h1 {
+            font-family: var(--pixel); font-size: clamp(22px, 5vw, 42px);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 18px var(--neon-cyan), 0 0 50px rgba(0, 255, 247, 0.25);
+            margin-bottom: 22px; line-height: 1.4;
+        }
+        .hero .tagline {
+            font-size: clamp(20px, 3vw, 28px);
+            color: #fff; font-weight: 600;
+            margin-bottom: 18px; max-width: 640px; line-height: 1.35;
+        }
+        .hero .sub {
+            font-size: 17px; color: var(--text); max-width: 620px;
+            margin-bottom: 28px; line-height: 1.8;
+        }
+        .hero .sub strong { color: #fff; }
+
+        .status-pill {
+            font-family: var(--mono); font-size: 13px;
+            color: var(--neon-yellow);
+            border: 1px dashed rgba(255, 230, 0, 0.45);
+            background: rgba(255, 230, 0, 0.05);
+            border-radius: 8px;
+            padding: 10px 16px;
+            margin-bottom: 36px;
+            max-width: 560px;
+            line-height: 1.6;
+        }
+        .status-pill strong { color: var(--neon-yellow); }
+        .status-pill.green {
+            color: var(--neon-green);
+            border-color: rgba(57, 255, 20, 0.45);
+            background: rgba(57, 255, 20, 0.05);
+        }
+        .status-pill.green strong { color: var(--neon-green); }
+
+        .cta-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .btn {
+            font-size: 14px; font-weight: 600; padding: 14px 26px;
+            border: 2px solid var(--neon-cyan); background: transparent;
+            color: var(--neon-cyan); cursor: pointer; text-decoration: none;
+            transition: all 0.2s; display: inline-block; border-radius: 4px;
+        }
+        .btn:hover {
+            background: var(--neon-cyan); color: var(--dark);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        .btn-secondary { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-secondary:hover {
+            background: var(--neon-green); color: var(--dark);
+            box-shadow: 0 0 20px var(--neon-green);
+        }
+
+        h2 {
+            font-size: clamp(18px, 2.4vw, 24px);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--neon-magenta);
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.35);
+            margin-bottom: 14px; text-align: center;
+        }
+        .section-sub {
+            text-align: center; color: var(--text-dim); font-size: 15px;
+            max-width: 640px; margin: 0 auto 44px;
+        }
+
+        /* ── Diagram 1: footprints vs standing place ── */
+        .metaphor-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+        }
+        @media (max-width: 820px) { .metaphor-grid { grid-template-columns: 1fr; } }
+
+        .metaphor-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 24px 22px;
+            display: flex; flex-direction: column; align-items: center;
+            overflow: hidden;
+        }
+        .metaphor-card .m-title {
+            font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 8px; text-align: center;
+        }
+        .metaphor-card.trail .m-title { color: var(--neon-orange); }
+        .metaphor-card.still .m-title { color: var(--neon-cyan); }
+        .metaphor-card .m-sub {
+            font-size: 13px; color: var(--text-dim); margin-bottom: 22px; text-align: center;
+        }
+        .metaphor-stage {
+            position: relative; width: 100%; height: 150px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .trail-track {
+            display: flex; gap: 12px; align-items: flex-end;
+            flex-wrap: wrap; justify-content: center; max-width: 100%;
+        }
+        .fp {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--neon-orange);
+            box-shadow: 0 0 10px var(--neon-orange);
+            opacity: 0;
+            animation: fp-appear 9s linear infinite;
+            flex: 0 0 auto;
+        }
+        .fp:nth-child(odd) { transform: translateY(-9px); }
+        @keyframes fp-appear {
+            0% { opacity: 0; }
+            6% { opacity: 1; }
+            92% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .trail-cost, .still-cost {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            text-align: center; font-family: var(--mono); font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+        .trail-cost { color: var(--neon-orange); }
+        .still-cost { color: var(--neon-cyan); }
+        .trail-cost .grow {
+            display: inline-block;
+            animation: cost-blink 1.4s steps(2) infinite;
+        }
+        @keyframes cost-blink { 50% { opacity: 0.35; } }
+
+        .still-stage { position: relative; width: 100%; height: 150px; }
+        .still-core {
+            position: absolute; top: 46%; left: 66%;
+            width: 74px; height: 74px; margin: -37px 0 0 -37px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            background: radial-gradient(circle, rgba(0,255,247,0.22) 0%, rgba(0,255,247,0.04) 70%);
+            box-shadow: 0 0 24px rgba(0,255,247,0.45), inset 0 0 18px rgba(0,255,247,0.22);
+            animation: core-pulse 2.8s ease-in-out infinite;
+        }
+        .still-core::after {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+            background: var(--neon-green);
+            box-shadow: 0 0 12px var(--neon-green);
+        }
+        @keyframes core-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,247,0.4), inset 0 0 16px rgba(0,255,247,0.2); }
+            50% { box-shadow: 0 0 34px rgba(0,255,247,0.75), inset 0 0 24px rgba(0,255,247,0.35); }
+        }
+        .tok {
+            position: absolute; top: 50%; left: 4%;
+            width: 9px; height: 9px; margin-top: -5px; border-radius: 50%;
+            background: var(--neon-yellow);
+            box-shadow: 0 0 8px var(--neon-yellow);
+            opacity: 0;
+            animation: tok-fly 3.2s linear infinite;
+        }
+        .tok:nth-child(2) { animation-delay: 0.8s; top: 34%; }
+        .tok:nth-child(3) { animation-delay: 1.6s; top: 64%; }
+        .tok:nth-child(4) { animation-delay: 2.4s; top: 48%; }
+        @keyframes tok-fly {
+            0%   { opacity: 0; left: 4%; }
+            10%  { opacity: 1; }
+            72%  { opacity: 1; left: 58%; transform: scale(1); }
+            85%  { opacity: 0; left: 64%; transform: scale(0.3); }
+            100% { opacity: 0; left: 64%; }
+        }
+
+        .metaphor-verdict {
+            margin-top: 32px; text-align: center; font-size: 15px;
+            color: var(--text); max-width: 680px; margin-left: auto; margin-right: auto;
+        }
+        .metaphor-verdict strong { color: var(--neon-green); }
+
+        /* ── Diagram 2: cold vs warm ── */
+        .race {
+            background: var(--dark-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 32px 26px;
+        }
+        .race-row { margin-bottom: 32px; }
+        .race-label {
+            font-size: 13px; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+            flex-wrap: wrap;
+        }
+        .race-label .who-cold { color: var(--neon-orange); }
+        .race-label .who-warm { color: var(--neon-green); }
+        .race-label .time { font-family: var(--mono); font-size: 12px; color: var(--text-dim); text-transform: none; letter-spacing: 0; font-weight: 400; }
+        .race-track {
+            position: relative; height: 36px; border-radius: 6px;
+            background: #15151e; border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .race-fill {
+            position: absolute; top: 0; left: 0; bottom: 0;
+            display: flex; align-items: center;
+            font-family: var(--mono); font-size: 12px; font-weight: 700;
+            white-space: nowrap; padding-left: 10px;
+            border-radius: 6px 0 0 6px;
+        }
+        .fill-cold {
+            background: linear-gradient(90deg, rgba(255,102,0,0.28), rgba(255,102,0,0.55));
+            color: #ffb27a; width: 0;
+            animation: cold-crawl 8s linear infinite;
+        }
+        @keyframes cold-crawl {
+            0%   { width: 0; }
+            72%  { width: 78%; }
+            100% { width: 78%; }
+        }
+        .fill-warm {
+            background: linear-gradient(90deg, rgba(57,255,20,0.28), rgba(57,255,20,0.55));
+            color: #a8ff8f; width: 0;
+            animation: warm-flash 8s linear infinite;
+        }
+        @keyframes warm-flash {
+            0%  { width: 0; }
+            6%  { width: 20.6%; }
+            100% { width: 20.6%; }
+        }
+        .answer-chip {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+            padding: 5px 9px; border-radius: 4px;
+            opacity: 0;
+        }
+        .chip-cold {
+            left: 80%; color: var(--neon-yellow); border: 1px solid var(--neon-yellow);
+            animation: chip-cold-show 8s linear infinite;
+        }
+        @keyframes chip-cold-show {
+            0%, 74% { opacity: 0; }
+            80%, 96% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .chip-warm {
+            left: 22.6%; color: var(--neon-yellow); border: 1px solid var(--neon-yellow);
+            animation: chip-warm-show 8s linear infinite;
+        }
+        @keyframes chip-warm-show {
+            0%, 8% { opacity: 0; }
+            14%, 96% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .race-note {
+            margin-top: 24px; text-align: center; font-size: 14px; color: var(--text-dim);
+        }
+        .race-note strong { color: var(--neon-green); }
+        .illus {
+            display: block; margin-top: 8px; font-family: var(--mono); font-size: 12px;
+            color: var(--neon-yellow);
+        }
+
+        /* ── 4 cards stay under why ── */
+        .why-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px; margin-top: 28px;
+        }
+        .why-card {
+            background: var(--dark-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 22px 20px;
+        }
+        .why-card h3 {
+            font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--neon-cyan);
+            margin-bottom: 10px;
+        }
+        .why-card p { font-size: 14px; color: var(--text-dim); line-height: 1.65; }
+        .why-card p strong { color: var(--text); }
+
+        /* ── Pipeline: 3 nodes ── */
+        .pipeline {
+            display: flex; align-items: stretch; justify-content: center;
+            gap: 0; flex-wrap: nowrap;
+        }
+        @media (max-width: 800px) { .pipeline { flex-direction: column; align-items: center; } }
+
+        .pipe-node {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px 18px;
+            width: 240px;
+            text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .pipe-node .mark {
+            width: 14px; height: 14px; border-radius: 50%;
+            margin-bottom: 12px;
+        }
+        .pipe-node .name {
+            font-family: var(--mono); font-weight: 700; font-size: 13px;
+            letter-spacing: 0.04em; margin-bottom: 8px;
+        }
+        .pipe-node .desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+        .pipe-node.n1 { border-color: rgba(255,230,0,0.35); }
+        .pipe-node.n1 .name { color: var(--neon-yellow); }
+        .pipe-node.n1 .mark { background: var(--neon-yellow); box-shadow: 0 0 10px var(--neon-yellow); }
+        .pipe-node.n2 {
+            border-color: rgba(0,255,247,0.5);
+            box-shadow: 0 0 18px rgba(0,255,247,0.1);
+        }
+        .pipe-node.n2 .name { color: var(--neon-cyan); }
+        .pipe-node.n2 .mark { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
+        .pipe-node.n3 { border-color: rgba(57,255,20,0.35); }
+        .pipe-node.n3 .name { color: var(--neon-green); }
+        .pipe-node.n3 .mark { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+
+        .pipe-badge {
+            margin-top: 12px; font-size: 11px; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            padding: 5px 8px; border-radius: 4px;
+        }
+        .badge-cyan { color: var(--neon-cyan); border: 1px dashed rgba(0,255,247,0.4); background: rgba(0,255,247,0.06); }
+        .badge-green { color: var(--neon-green); border: 1px dashed rgba(57,255,20,0.4); background: rgba(57,255,20,0.06); }
+
+        .pipe-link {
+            flex: 0 0 52px; align-self: center; height: 3px;
+            background-image: linear-gradient(90deg, var(--neon-cyan) 55%, transparent 45%);
+            background-size: 12px 3px;
+            background-repeat: repeat-x;
+            animation: dash-flow 1s linear infinite;
+            opacity: 0.7;
+        }
+        @keyframes dash-flow { to { background-position: 12px center; } }
+        @media (max-width: 800px) {
+            .pipe-link {
+                flex: 0 0 auto; width: 3px; height: 28px;
+                background-image: linear-gradient(180deg, var(--neon-cyan) 55%, transparent 45%);
+                background-size: 3px 12px; background-repeat: repeat-y;
+                animation: dash-flow-v 1s linear infinite;
+            }
+            @keyframes dash-flow-v { to { background-position: center 12px; } }
+        }
+
+        .pipeline-legend {
+            margin-top: 28px; text-align: center; font-size: 14px; color: var(--text-dim);
+            max-width: 680px; margin-left: auto; margin-right: auto;
+        }
+        .pipeline-legend strong { color: #fff; }
+        .not-for {
+            margin-top: 20px; text-align: center; font-size: 13px; color: var(--text-dim);
+            max-width: 640px; margin-left: auto; margin-right: auto;
+            border-top: 1px solid var(--border); padding-top: 18px;
+        }
+
+        .lab-box {
+            background: var(--dark-card); border: 1px dashed rgba(255,0,255,0.35);
+            border-radius: 14px; padding: 30px 28px; text-align: center;
+        }
+        .lab-box p { font-size: 15px; color: var(--text-dim); max-width: 640px; margin: 0 auto 18px; }
+        .lab-box p strong { color: var(--neon-magenta); }
+        .pin-list {
+            display: flex; flex-direction: column; gap: 10px; max-width: 620px; margin: 0 auto;
+            text-align: left;
+        }
+        .pin-item {
+            font-family: var(--mono); font-size: 13px; color: var(--text);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px 14px; background: #15151e;
+            display: flex; justify-content: space-between; gap: 12px; align-items: baseline;
+            flex-wrap: wrap;
+        }
+        .pin-item .pin-id { color: var(--neon-yellow); font-weight: 700; }
+        .patch-box {
+            margin: 22px 0 8px; padding: 18px 20px;
+            border: 1px solid rgba(57, 255, 20, 0.25);
+            border-left: 3px solid var(--neon-green);
+            border-radius: 8px; background: rgba(57, 255, 20, 0.04);
+        }
+        .patch-head {
+            font-family: var(--mono); font-size: 12px; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--neon-green); margin-bottom: 10px;
+        }
+        .patch-box p { font-size: 14px; margin: 0 0 10px; }
+        .patch-box p:last-child { margin-bottom: 0; }
+        .patch-sha {
+            font-family: var(--mono); font-size: 12px; color: var(--text-dim);
+            padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .patch-sha code { color: var(--neon-cyan); }
+        .status-done { color: var(--neon-green); font-size: 12px; font-weight: 700; }
+        .status-active { color: var(--neon-cyan); font-size: 12px; }
+        .status-next { color: var(--text-dim); font-size: 12px; }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 24px; text-align: center;
+            font-size: 13px; color: var(--text-dim);
+        }
+        footer a { color: var(--neon-cyan); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .fp { opacity: 1 !important; animation: none !important; }
+            .tok { display: none !important; }
+            .still-core, .trail-cost .grow, .pipe-link { animation: none !important; }
+            .fill-cold { width: 78% !important; animation: none !important; }
+            .fill-warm { width: 20.6% !important; animation: none !important; }
+            .chip-cold, .chip-warm { opacity: 1 !important; animation: none !important; }
+            canvas#starfield { display: none; }
+        }
+    </style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+
+<div class="content">
+    <nav>
+        <a class="logo" href="index.html">◉ STILLPOINT</a>
+        <div class="links">
+            <a href="#concept">Concept</a>
+            <a href="#why">Why</a>
+            <a href="#how">How</a>
+            <a href="#lab">Lab</a>
+            <a href="https://github.com/dl4rce/stillpoint">GitHub</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>STILLPOINT</h1>
+        <p class="tagline">Your agent starts already knowing the project.</p>
+        <p class="sub">
+            We don’t cache replies. We <strong>compile your knowledge into the model’s
+            standing place</strong> and restore it from disk — so the next session
+            does not pay to rediscover what the last one already hiked.
+        </p>
+        <p class="status-pill green">
+            <strong>PIN-0001 is green.</strong> Exact restore across a full engine restart at 26k tokens:
+            7.0&nbsp;s vs 33.9&nbsp;s cold (4.9×), 98.7% hit. Suite 12/12, measured 2026-08-21.
+        </p>
+        <div class="cta-row">
+            <a class="btn" href="#concept">See the idea</a>
+            <a class="btn btn-secondary" href="https://github.com/dl4rce/stillpoint">Follow the pins</a>
+        </div>
+    </section>
+
+    <section id="concept">
+        <h2>Footprints vs. standing place</h2>
+        <p class="section-sub">
+            Classic transformers remember by keeping a footprint for every token.
+            Hybrid GDN models fold the past into one fixed-size recurrent state.
+            That changes what a cache can be.
+        </p>
+
+        <div class="metaphor-grid">
+            <div class="metaphor-card trail">
+                <div class="m-title">Attention = footprints</div>
+                <div class="m-sub">every token leaves a print — the trail grows</div>
+                <div class="metaphor-stage">
+                    <div class="trail-track">
+                        <span class="fp" style="animation-delay: 0.0s"></span>
+                        <span class="fp" style="animation-delay: 0.7s"></span>
+                        <span class="fp" style="animation-delay: 1.4s"></span>
+                        <span class="fp" style="animation-delay: 2.1s"></span>
+                        <span class="fp" style="animation-delay: 2.8s"></span>
+                        <span class="fp" style="animation-delay: 3.5s"></span>
+                        <span class="fp" style="animation-delay: 4.2s"></span>
+                        <span class="fp" style="animation-delay: 4.9s"></span>
+                        <span class="fp" style="animation-delay: 5.6s"></span>
+                        <span class="fp" style="animation-delay: 6.3s"></span>
+                    </div>
+                    <div class="trail-cost">memory &amp; cost <span class="grow">grows with every token</span></div>
+                </div>
+            </div>
+
+            <div class="metaphor-card still">
+                <div class="m-title">GDN = standing place</div>
+                <div class="m-sub">tokens flow in — one snapshot absorbs them</div>
+                <div class="metaphor-stage still-stage">
+                    <span class="tok"></span>
+                    <span class="tok"></span>
+                    <span class="tok"></span>
+                    <span class="tok"></span>
+                    <div class="still-core"></div>
+                    <div class="still-cost">one snapshot · fixed size · never grows</div>
+                </div>
+            </div>
+        </div>
+
+        <p class="metaphor-verdict">
+            After the hike you don’t need the trail — you need <strong>where you stand</strong>.
+            Stillpoint saves that standing place to disk and puts you back on it — across a full restart.
+        </p>
+    </section>
+
+    <section id="why">
+        <h2>Without vs. with</h2>
+        <p class="section-sub">
+            Hosted APIs already prefix-cache. That cache is best-effort and dies with idle time
+            or a restart. Stillpoint commits the standing place to disk — these are measured
+            numbers from PIN-0001, not a projection.
+        </p>
+
+        <div class="race">
+            <div class="race-row">
+                <div class="race-label">
+                    <span class="who-cold">Cold — nothing restored</span>
+                    <span class="time">26k-token working set · total wall incl. answer</span>
+                </div>
+                <div class="race-track">
+                    <div class="race-fill fill-cold">re-reading knowledge… 33.9 s</div>
+                    <div class="answer-chip chip-cold">ANSWER</div>
+                </div>
+            </div>
+
+            <div class="race-row">
+                <div class="race-label">
+                    <span class="who-warm">Warm — standing place restored</span>
+                    <span class="time">same 26k set, after a full engine restart</span>
+                </div>
+                <div class="race-track">
+                    <div class="race-fill fill-warm">restore… 7.0 s</div>
+                    <div class="answer-chip chip-warm">ANSWER</div>
+                </div>
+            </div>
+
+            <p class="race-note">
+                Compile the hot prefix <strong>once</strong>. Later sessions skip the hike —
+                and the win grows with the working set.
+                <span class="illus">Measured 2026-08-21 (Qwen3-class 27B, vLLM + LMCache, TP=2), after a full engine restart.
+                End-to-end wall: <strong>2.4×</strong> at 5k · <strong>4.0×</strong> at 13k · <strong>4.9×</strong> at 26k.
+                On time-to-first-token — the prefill the restore actually replaces — <strong>3.5× / 5.0× / 5.4×</strong>
+                (26k: 33.5 s cold → 6.2 s restored). 97–98.8% cache hit, exact answer every run.</span>
+            </p>
+        </div>
+
+        <div class="why-grid">
+            <div class="why-card">
+                <h3>Knows the project</h3>
+                <p>A plain API has <strong>no knowledge</strong> of your repo until you paste it. A warm Stillpoint session starts with that knowledge already absorbed.</p>
+            </div>
+            <div class="why-card">
+                <h3>Cache that survives</h3>
+                <p>Provider prefix caches evaporate. The standing place is <strong>on disk</strong> — still warm after restarts, deploys, and weekends. PIN-0001 proves it: kill the server, restore, exact answer.</p>
+            </div>
+            <div class="why-card">
+                <h3>Pay per job, not per re-read</h3>
+                <p>Token pricing bills you for re-reading the same docs. Compile once, restore after — <strong>the re-reading line item is the one we want gone</strong>.</p>
+            </div>
+            <div class="why-card">
+                <h3>No cross-contamination</h3>
+                <p>Verified: a never-stored context gets <strong>0% cache hits and a clean cold prefill</strong>. Dedicated hardware, knowledge in your Git. Per-tenant salted keys are PIN-0002.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="how">
+        <h2>How it fits together</h2>
+        <p class="section-sub">
+            Three pieces. Knowledge lives in Git. It is compiled through the model once.
+            The standing place is stored where a process restart cannot kill it.
+        </p>
+
+        <div class="pipeline">
+            <div class="pipe-node n1">
+                <div class="mark"></div>
+                <div class="name">KNOWLEDGE</div>
+                <div class="desc">Hot docs in Git — ADRs, bugfixes, runbooks. Flaiwheel is one curated source, not the only one.</div>
+                <div class="pipe-badge badge-cyan">Source of truth</div>
+            </div>
+            <div class="pipe-link"></div>
+            <div class="pipe-node n2">
+                <div class="mark"></div>
+                <div class="name">STANDING PLACE</div>
+                <div class="desc">Recurrent-state snapshot + KV prefix, keyed by exact token hash, written to the disk tier.</div>
+                <div class="pipe-badge badge-green">Survives reboots</div>
+            </div>
+            <div class="pipe-link"></div>
+            <div class="pipe-node n3">
+                <div class="mark"></div>
+                <div class="name">WARM SESSION</div>
+                <div class="desc">vLLM + LMCache restore that state. The agent starts already knowing — proven across a full restart in PIN-0001.</div>
+                <div class="pipe-badge badge-green">Every session</div>
+            </div>
+        </div>
+
+        <p class="pipeline-legend">
+            <strong>Exact:</strong> first product is lossless prefix restore, not CacheBlend on GDN pages.
+            <strong>Isolated:</strong> a never-stored context gets 0% hit and a clean cold prefill — verified.
+            <strong>Recompile when the prefix changes</strong> — unchanged hot docs stay warm; a new doc at the front is a new hike.
+        </p>
+        <p class="not-for">
+            Not a generic LLM API. Not CacheBlend. Today the pin is Qwen3.8 GDN on dedicated hardware — one architecture, one box, one working set.
+        </p>
+    </section>
+
+    <section id="lab">
+        <h2>An open lab, not a black box</h2>
+        <div class="lab-box">
+            <p>
+                Stillpoint is the open-source lab of <strong>4rce.com</strong>. Every finding is a
+                numbered <strong>pin</strong> — a committed, reproducible result on the path to
+                persistent state for hybrid GDN models. The hard parts are public.
+            </p>
+            <div class="patch-box">
+                <div class="patch-head">The PIN-0001 artifact</div>
+                <p>
+                    We traced the failure to <strong>three bugs in LMCache 0.5.3</strong> — a layout
+                    misread that silently dropped 24 of 25 kernel pages, a shadowed variable that
+                    disguised every failure as a worker timeout, and async host-buffer corruption from
+                    mutating shared metadata. All three are on the LMCache side; vLLM needed no changes.
+                </p>
+                <p>
+                    The 4-file patch is verified <strong>byte-for-byte against a pristine wheel</strong>,
+                    and the fix is <strong>geometry-driven, not GPU-count-driven</strong> — proven at
+                    TP=2 (25:1 page geometry) and TP=1 (17:1). That is a robustness claim no speedup
+                    number can make.
+                </p>
+                <p class="patch-sha">
+                    <a href="https://github.com/dl4rce/stillpoint/blob/main/patches/lmcache-053-pin0001-hybrid-fa.patch">lmcache-053-pin0001-hybrid-fa.patch</a>
+                    · sha256 <code>cee37350…</code> ·
+                    <a href="https://github.com/dl4rce/stillpoint/blob/main/patches/lmcache-053-pin0001-hybrid-fa.README.md">full explainer</a>
+                </p>
+            </div>
+            <div class="pin-list">
+                <div class="pin-item">
+                    <span><span class="pin-id">PIN-0001</span> vLLM + LMCache still-point store/restore for Qwen3.8 GDN</span>
+                    <span class="status-done">✓ green — 12/12</span>
+                </div>
+                <div class="pin-item">
+                    <span><span class="pin-id">PIN-0002</span> Exact-prefix warm of hot docs — lossless first product</span>
+                    <span class="status-active">● next</span>
+                </div>
+                <div class="pin-item">
+                    <span><span class="pin-id">PIN-0003</span> LinearKV on Qwen3.8 — shuffled RAG for hybrids</span>
+                    <span class="status-next">○ research</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Stillpoint — an open-source lab by <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a></p>
+        <p style="margin-top: 8px;">
+            <a href="https://github.com/dl4rce/stillpoint">GitHub</a> ·
+            <a href="https://flaiwheel.app">Flaiwheel</a> ·
+            <a href="whitepaper.html">Whitepaper</a> ·
+            <a href="imprint.html">Imprint</a>
+        </p>
+    </footer>
+</div>
+
+<script>
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        stars = Array.from({length: 80}, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.2 + 0.2,
+            s: Math.random() * 0.12 + 0.03
+        }));
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    if (!reduce) {
+        (function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            for (const st of stars) {
+                ctx.globalAlpha = 0.18 + Math.abs(Math.sin(Date.now() / 1800 + st.x)) * 0.35;
+                ctx.beginPath();
+                ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+                ctx.fill();
+                st.y += st.s;
+                if (st.y > canvas.height) st.y = 0;
+            }
+            ctx.globalAlpha = 1;
+            requestAnimationFrame(draw);
+        })();
+    }
+</script>
+</body>
+</html>

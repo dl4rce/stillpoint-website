@@ -34,15 +34,6 @@ The engineering behind those numbers — the LMCache patch, its explainer, and t
 verification suite — lives in the `dl4rce/stillpoint` repository, which is not yet
 public. Links to it from the site will resolve once it is published.
 
-## Security
-
-- `.gitleaks.toml` — secret-scanning config, run in CI on every push and pull request
-  via `.github/workflows/gitleaks.yml`
-- Dependabot — security-only updates for GitHub Actions
-
-Contributors are encouraged to run `gitleaks` locally before committing; a pre-commit
-hook is not shipped in this repository, since Git does not distribute hooks on clone.
-
 ## Licence
 
 Site content © 4rce.com Digital Technologies GmbH. Press Start 2P is licensed under

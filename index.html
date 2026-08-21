@@ -703,10 +703,15 @@
             <div class="patch-box">
                 <div class="patch-head">The PIN-0001 artifact</div>
                 <p>
-                    We traced the failure to <strong>three bugs in LMCache 0.5.3</strong> — a layout
-                    misread that silently dropped 24 of 25 kernel pages, a shadowed variable that
-                    disguised every failure as a worker timeout, and async host-buffer corruption from
-                    mutating shared metadata. All three are on the LMCache side; vLLM needed no changes.
+                    We traced the failure to <strong>two bugs in LMCache 0.5.3</strong> — a layout
+                    misread that silently dropped 24 of 25 kernel pages, and async host-buffer
+                    corruption from mutating shared metadata. A third failure mode — a shadowed
+                    variable disguising every error as a worker timeout — lived in our own diagnostic
+                    layer and hid the real bugs until it was removed. Both LMCache bugs are fixed by
+                    the patch; vLLM needed no changes. Upstream has since fixed the core bug
+                    independently on its unreleased development branch — <strong>no released LMCache
+                    version has the fix</strong>, making this patch the only verified fix for released
+                    versions today (as of 2026-08-21).
                 </p>
                 <p>
                     The 4-file patch is verified <strong>byte-for-byte against a pristine wheel</strong>,

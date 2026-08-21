@@ -131,11 +131,16 @@
                 restore actually replaces, and is the fairer measure of what was eliminated.
             </p>
             <p>
-                All three root causes were in LMCache 0.5.3, not vLLM: a layout misread that
-                persisted only 1 of 25 kernel pages per chunk, a variable-shadowing
-                <code>TypeError</code> that disguised failures as worker-timeout hangs, and
-                async host-buffer corruption from mutating shared metadata. The 4-file patch
-                is verified byte-for-byte against a pristine wheel.
+                Two root causes were in LMCache 0.5.3, not vLLM: a layout misread that
+                persisted only 1 of 25 kernel pages per chunk, and async host-buffer
+                corruption from mutating shared metadata. A third failure mode — a
+                variable-shadowing <code>TypeError</code> that disguised failures as
+                worker-timeout hangs — lived in our own diagnostic layer, not upstream,
+                and hid the real bugs until it was removed. Upstream has since fixed the
+                core layout bug independently on its unreleased development branch; no
+                released LMCache version has the fix, so the 4-file patch — verified
+                byte-for-byte against a pristine wheel — remains the only working fix
+                on any released version (as of 2026-08-21).
             </p>
         </div>
         <div class="card">

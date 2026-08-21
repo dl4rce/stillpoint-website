@@ -136,11 +136,11 @@
                 corruption from mutating shared metadata. A third failure mode — a
                 variable-shadowing <code>TypeError</code> that disguised failures as
                 worker-timeout hangs — lived in our own diagnostic layer, not upstream,
-                and hid the real bugs until it was removed. Upstream has since fixed the
-                core layout bug independently on its unreleased development branch; no
-                released LMCache version has the fix, so the 4-file patch — verified
-                byte-for-byte against a pristine wheel — remains the only working fix
-                on any released version (as of 2026-08-21).
+                and hid the real bugs until it was removed. Upstream ships an intended
+                fix for the layout bug, but it never activates on vLLM ≥ 0.26's KV
+                layout — verified broken through the current development branch. As of
+                2026-08-21 the 4-file patch — verified byte-for-byte against a pristine
+                wheel — is the only verified working fix on any LMCache version.
             </p>
         </div>
         <div class="card">

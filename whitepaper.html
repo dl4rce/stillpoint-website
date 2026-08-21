@@ -140,7 +140,13 @@
                 fix for the layout bug, but it never activates on vLLM ≥ 0.26's KV
                 layout — verified broken through the current development branch. As of
                 2026-08-21 the 4-file patch — verified byte-for-byte against a pristine
-                wheel — is the only verified working fix on any LMCache version.
+                wheel — is the only verified working fix on vLLM ≥ 0.26.
+            </p>
+            <p>
+                Patch: <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix/blob/main/patches/lmcache-053-hybrid-fa.patch"><code>lmcache-053-hybrid-fa.patch</code></a>
+                (sha256 <code>491b8faa…</code>) ·
+                <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix/blob/main/EXPLAINER.md">full explainer</a> ·
+                <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">repo</a>
             </p>
         </div>
         <div class="card">
@@ -168,8 +174,9 @@
             </ol>
         </div>
         <p class="lede" style="margin-top: 28px;">
-            Working notes live in the <a href="https://github.com/dl4rce/stillpoint">GitHub repo</a>
-            as they land.
+            The public artifact — patch, explainer, verification steps — lives in the
+            <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">fix repo</a>.
+            Pin status is tracked on the <a href="index.html#lab">lab page</a>.
         </p>
     </main>
     <footer>

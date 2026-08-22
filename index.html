@@ -631,7 +631,7 @@
             <p class="race-note">
                 Compile the hot prefix <strong>once</strong>. Later sessions skip the hike —
                 and the win grows with the working set.
-                <span class="illus">Measured 2026-08-21 (Qwen3-class 27B, vLLM + LMCache, TP=2), after a full engine restart.
+                <span class="illus">Measured 2026-08-21 (hybrid GDN-class models, verified on Qwen3.8, 27B; vLLM + LMCache, TP=2), after a full engine restart.
                 End-to-end wall: <strong>2.4×</strong> at 5k · <strong>4.0×</strong> at 13k · <strong>4.9×</strong> at 26k.
                 On time-to-first-token — the prefill the restore actually replaces — <strong>3.5× / 5.0× / 5.4×</strong>
                 (26k: 33.5 s cold → 6.2 s restored). 97–98.8% cache hit, exact answer every run.</span>
@@ -728,9 +728,12 @@
                 <p class="patch-sha">
                     <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix/blob/main/patches/lmcache-053-hybrid-fa.patch">lmcache-053-hybrid-fa.patch</a>
                     <span class="sep">·</span>
-                    <span>sha256 <code>491b8faa…</code></span>
+                    <span>sha256 <code>ec14d5012…</code> (rev 2)</span>
                     <span class="sep">·</span>
                     <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix/blob/main/EXPLAINER.md">full explainer</a>
+                </p>
+                <p class="patch-sha">
+                    <span>12/12 verification was measured on rev 1 (<code>491b8faa…</code>); rev 2 is functionally identical in the transfer path and re-verification is in progress.</span>
                 </p>
             </div>
             <div class="pin-list">

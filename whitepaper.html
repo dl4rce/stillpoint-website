@@ -105,7 +105,7 @@
         <div class="card result-card" style="margin-bottom: 28px;">
             <h2 style="margin-top:0;">PIN-0001 result — measured 2026-08-21</h2>
             <p>
-                Qwen3-class 27B, vLLM + LMCache multiprocess, TP=2, speculative decoding on,
+                Hybrid GDN-class models (verified on Qwen3.8, 27B), vLLM + LMCache multiprocess, TP=2, speculative decoding on,
                 CPU L1 + disk L2. A random 24-hex key is buried inside a long document; the
                 context is stored, the engine is <strong>fully restarted</strong>, then the
                 same prefix is restored from disk and the key is asked for.
@@ -144,9 +144,14 @@
             </p>
             <p>
                 Patch: <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix/blob/main/patches/lmcache-053-hybrid-fa.patch"><code>lmcache-053-hybrid-fa.patch</code></a>
-                (sha256 <code>491b8faa…</code>) ·
+                (sha256 <code>ec14d5012…</code>, rev 2) ·
                 <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix/blob/main/EXPLAINER.md">full explainer</a> ·
                 <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">repo</a>
+            </p>
+            <p>
+                12/12 verification was measured on rev 1 (sha256 <code>491b8faa…</code>);
+                rev 2 is functionally identical in the transfer path and re-verification
+                is in progress.
             </p>
         </div>
         <div class="card">

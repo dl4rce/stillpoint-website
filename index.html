@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stillpoint — Compile Knowledge Into the Model's Standing Place</title>
-    <meta name="description" content="Open lab: compile project knowledge into the recurrent state of a hybrid GDN model and restore it from disk. PIN-0001 is green — persistent restore across a full vLLM restart, 98.8% hit, up to 4.9x faster than cold prefill. Apache-2, by 4rce.com.">
+    <meta name="description" content="Open lab: compile project knowledge into the recurrent state of a hybrid GDN model and restore it from disk. PIN-0001 is green — persistent restore across a full vLLM restart, 98.8% hit, up to 7.6x faster than cold prefill. Apache-2, by 4rce.com.">
     <meta name="keywords" content="Stillpoint, GDN, Gated DeltaNet, Qwen3.8, LMCache, vLLM, persistent KV cache, prefix cache, LinearKV, hybrid LLM, recurrent state, AI agent memory, Flaiwheel">
     <meta name="author" content="4rce.com Digital Technologies GmbH">
     <meta name="robots" content="index, follow">
@@ -13,7 +13,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://stillpointlab.dev/">
     <meta property="og:title" content="Stillpoint — The Model's Standing Place">
-    <meta property="og:description" content="We don't cache replies. We compile your knowledge into the model's standing place so the agent doesn't pay to rediscover it. PIN-0001 green: persistent restore across a full restart, up to 4.9x faster than cold prefill.">
+    <meta property="og:description" content="We don't cache replies. We compile your knowledge into the model's standing place so the agent doesn't pay to rediscover it. PIN-0001 green: persistent restore across a full restart, up to 7.6x faster than cold prefill.">
     <meta property="og:site_name" content="Stillpoint">
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
@@ -539,7 +539,7 @@
         </p>
         <p class="status-pill green">
             <strong>PIN-0001 is green.</strong> Exact restore across a full engine restart at 26k tokens:
-            7.0&nbsp;s vs 33.9&nbsp;s cold (4.9×), 98.7% hit. Suite 12/12, measured 2026-08-21.
+            3.6&nbsp;s vs 27.4&nbsp;s cold (7.6×), 98.7% hit. Suite 12/12, measured 2026-08-22 on patch rev 2.
         </p>
         <div class="cta-row">
             <a class="btn" href="#concept">See the idea</a>
@@ -631,10 +631,10 @@
             <p class="race-note">
                 Compile the hot prefix <strong>once</strong>. Later sessions skip the hike —
                 and the win grows with the working set.
-                <span class="illus">Measured 2026-08-21 (hybrid GDN-class models, verified on Qwen3.8, 27B; vLLM + LMCache, TP=2), after a full engine restart.
-                End-to-end wall: <strong>2.4×</strong> at 5k · <strong>4.0×</strong> at 13k · <strong>4.9×</strong> at 26k.
-                On time-to-first-token — the prefill the restore actually replaces — <strong>3.5× / 5.0× / 5.4×</strong>
-                (26k: 33.5 s cold → 6.2 s restored). 97–98.8% cache hit, exact answer every run.</span>
+                <span class="illus">Measured 2026-08-22 on patch rev 2 (hybrid GDN-class models, verified on Qwen3.8, 27B; vLLM + LMCache, TP=2), after a full engine restart.
+                End-to-end wall: <strong>2.6×</strong> at 5k · <strong>5.7×</strong> at 13k · <strong>7.6×</strong> at 26k.
+                On time-to-first-token — the prefill the restore actually replaces — <strong>5.0× / 8.0× / 9.9×</strong>
+                (26k: 27.0 s cold → 2.7 s restored). 97–98.8% cache hit, exact answer every run.</span>
             </p>
         </div>
 
@@ -733,7 +733,7 @@
                     <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix/blob/main/EXPLAINER.md">full explainer</a>
                 </p>
                 <p class="patch-sha">
-                    <span>12/12 verification was measured on rev 1 (<code>491b8faa…</code>); rev 2 is functionally identical in the transfer path and re-verification is in progress.</span>
+                    <span>12/12 verified on rev 2 (<code>ec14d5012…</code>) on 2026-08-22, applied to a pristine <code>lmcache==0.5.3</code> install.</span>
                 </p>
             </div>
             <div class="pin-list">

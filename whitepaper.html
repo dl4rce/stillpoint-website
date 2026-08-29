@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whitepaper outline — Stillpoint</title>
-    <meta name="description" content="Outline of the Stillpoint whitepaper: standing-place state for hybrid GDN models, exact-prefix warm first, LinearKV as research.">
+    <meta name="description" content="Outline of the Stillpoint whitepaper: standing-place state for hybrid GDN models, lossless session still-points first, LinearKV and cross-model transfer as research.">
     <link rel="canonical" href="https://stillpointlab.dev/whitepaper.html">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
     <style>
@@ -171,7 +171,11 @@
                 </li>
                 <li>
                     <strong>Product order.</strong>
-                    <span>First: lossless exact-prefix warm of hot docs (PIN-0002), keyed by token hash, salted per project. Second: LinearKV for shuffled RAG on hybrids (PIN-0003). Not CacheBlend on GDN pages.</span>
+                    <span>First: lossless session still-points (PIN-0002) — the agent's working set is observed at runtime, frozen into a canonical prefix at a turn boundary, reused every following turn, and evicted when the task is done. Keyed by exact token hash, salted per project; chronically hot docs graduate into a pre-compiled base pack. Second: LinearKV for shuffled RAG on hybrids (PIN-0003). Third: cross-model still-point transfer for agent cascades (PIN-0004, research). Not CacheBlend on GDN pages.</span>
+                </li>
+                <li>
+                    <strong>Why it beats re-ranked RAG.</strong>
+                    <span>Retrieval re-ranking reshuffles search results every turn, so the token sequence changes and even native prefix caching misses on the knowledge portion — every single turn. Freezing the working set into one canonical layout is one honest prefill; every later turn hits it. Text-memory layers (Mem0-style) solve recall, not compute: each remembered fact is re-prefilled at full token cost per session.</span>
                 </li>
                 <li>
                     <strong>Isolation.</strong>
@@ -179,7 +183,7 @@
                 </li>
                 <li>
                     <strong>What we will measure.</strong>
-                            <span>Exact-answer restore vs cold prefill, latency after disk restore, survival across a vLLM restart, and failure modes (NaN logits when MTP and LMCache disagree). <strong>Done for PIN-0001 — numbers above.</strong> Still to measure: PIN-0002 hot-doc packs under concurrency, and PIN-0003 LinearKV quality on shuffled RAG. No number on this site until it is measured on the pin hardware.</span>
+                            <span>Exact-answer restore vs cold prefill, latency after disk restore, survival across a vLLM restart, and failure modes (NaN logits when MTP and LMCache disagree). <strong>Done for PIN-0001 — numbers above.</strong> Still to measure: PIN-0002 freeze economics in real agent sessions (hit rate, TTFT saved, cost of a wrong freeze) and still-point residency under concurrency, then PIN-0003 LinearKV quality on shuffled RAG. No number on this site until it is measured on the pin hardware.</span>
                 </li>
             </ol>
         </div>

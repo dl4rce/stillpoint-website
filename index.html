@@ -344,6 +344,10 @@
             margin-top: 24px; text-align: center; font-size: 14px; color: var(--text-dim);
         }
         .race-note strong { color: var(--neon-green); }
+        .converge-note {
+            max-width: 620px; margin-left: auto; margin-right: auto; margin-top: 32px;
+            text-align: left; line-height: 1.7;
+        }
         .illus {
             display: block; margin-top: 8px; font-family: var(--mono); font-size: 12px;
             color: var(--neon-yellow);
@@ -656,6 +660,16 @@
                 <p>Verified: a never-stored context gets <strong>0% cache hits and a clean cold prefill</strong>. Dedicated hardware, knowledge in your Git. Per-tenant salted keys are PIN-0002.</p>
             </div>
         </div>
+
+        <p class="race-note converge-note">
+            <strong>The field is converging on this.</strong> Frontier open-weight models now ship on
+            delta-attention hybrids — the same architecture family as Qwen3.8's Gated DeltaNet, with the
+            same standing-place persistence problem PIN-0001 solved. And providers now headline a
+            <strong>10× price gap between cache-hit and cache-miss input tokens</strong>: the market
+            already prices the asset Stillpoint manufactures. Text-memory layers help a model
+            <em>recall</em> decisions, but re-prefill every remembered fact each session — the standing
+            place makes that knowledge <strong>already computed</strong> when the session starts.
+        </p>
     </section>
 
     <section id="how">
@@ -742,11 +756,15 @@
                     <span class="status-done">✓ green — 12/12</span>
                 </div>
                 <div class="pin-item">
-                    <span><span class="pin-id">PIN-0002</span> Exact-prefix warm of hot docs — lossless first product</span>
+                    <span><span class="pin-id">PIN-0002</span> Session still-points — compile the working set when it emerges, reuse every turn, evict when done. Lossless first product</span>
                     <span class="status-active">● next</span>
                 </div>
                 <div class="pin-item">
                     <span><span class="pin-id">PIN-0003</span> LinearKV on Qwen3.8 — shuffled RAG for hybrids</span>
+                    <span class="status-next">○ research</span>
+                </div>
+                <div class="pin-item">
+                    <span><span class="pin-id">PIN-0004</span> Cross-model still-point transfer — small-to-large agent cascades without re-prefill</span>
                     <span class="status-next">○ research</span>
                 </div>
             </div>

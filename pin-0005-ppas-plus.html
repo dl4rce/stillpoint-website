@@ -101,7 +101,7 @@
             <span class="pill green">candidate gates passed</span>
             <span class="pill green">40/40 repeated workloads</span>
             <span class="pill green">validated active profile</span>
-            <span class="pill yellow">GOLDEN failure under retest</span>
+            <span class="pill green">corrected focused A/B passed 5/5 + 5/5</span>
         </div>
 
         <section class="executive" aria-labelledby="executive-summary">
@@ -111,7 +111,7 @@
                 <div><strong>Contribution</strong><span>P-PAS+ ported to vLLM 0.28 without removing LMCache, MTP-3 or long-context support.</span></div>
                 <div><strong>Strongest result</strong><span>+4.90% decode throughput and −4.52% decode wall time in the target paired scenario.</span></div>
                 <div><strong>Validation</strong><span>All candidate gates and 40/40 repeated candidate workloads passed.</span></div>
-                <div><strong>Current status</strong><span>Validated active profile; unchanged GOLDEN failure is under focused retest.</span></div>
+                <div><strong>Current status</strong><span>Validated active profile; corrected memory-headroom A/B passed 5/5 focused runs on each profile.</span></div>
                 <div><strong>Key limitation</strong><span>The paired gain is a two-repetition median for one workload shape, not a universal speed claim.</span></div>
             </div>
             <a class="download" href="pdf/pin-0005-ppas-plus.pdf" type="application/pdf">Download PDF</a>
@@ -238,10 +238,12 @@
             completed the full candidate sequence.
         </p>
         <div class="note">
-            This proves that the P-PAS+ profile is operational and stable under the tested sequence. It
-            does not by itself prove that P-PAS+ universally uses less memory, prevents OOM, or is faster
-            for every workload. The failed GOLDEN case is being rerun unchanged; this paper will be
-            updated with the outcome.
+            A focused unchanged GOLDEN retry reproduced the same CUDA OOM. The shared configuration had
+            reserved 93% of GPU memory for vLLM, leaving insufficient activation headroom for a 54 MiB MTP
+            proposal allocation. Reducing <code>gpu_memory_utilization</code> symmetrically to 0.91 preserved
+            LMCache, MTP-3, FP8 KV and both schedulers. GOLDEN and P-PAS+ then each completed 5/5 focused
+            8k/512 runs without OOM. This isolates a shared memory-envelope defect; it does not prove that
+            P-PAS+ intrinsically uses less memory or prevents OOM.
         </div>
 
         <h2>10. Threats to validity, caveats and non-claims</h2>
@@ -264,7 +266,7 @@
 
         <h2>12. Conclusion</h2>
         <p>
-            P-PAS+ is a validated active Stillpoint profile: it preserves the full production capability set and completed the entire repeated candidate campaign. The preliminary paired evidence supports the intended scheduling benefit when one very large prefill competes with active decoding, while showing no meaningful benefit in the dual-prefill case. The focused unchanged GOLDEN retry determines whether the extended-run OOM is reproducible; it does not change the candidate’s independently passed gates.
+            P-PAS+ is a validated active Stillpoint profile: it preserves the full production capability set and completed the entire repeated candidate campaign. The preliminary paired evidence supports the intended scheduling benefit when one very large prefill competes with active decoding, while showing no meaningful benefit in the dual-prefill case. The reproduced GOLDEN OOM was corrected by adding equal activation headroom to both profiles; the corrected focused A/B completed 5/5 runs per profile without OOM.
         </p>
 
         <h2>13. Acknowledgements</h2>
@@ -283,7 +285,8 @@
         <ol>
             <li><strong>2026-09-04 · Preliminary paired canary:</strong> target case improved by approximately 5%; dual-prefill case neutral.</li>
             <li><strong>2026-09-04 · Clean candidate validation:</strong> all gates and 40/40 repeated candidate workloads passed.</li>
-            <li><strong>2026-09-04 · Extended GOLDEN arm:</strong> CUDA OOM during the second 8k-agent repetition; focused unchanged retry in progress.</li>
+            <li><strong>2026-09-04 · Extended GOLDEN arm:</strong> CUDA OOM in the MTP proposal path; focused unchanged retry reproduced the failure.</li>
+            <li><strong>2026-09-04 · Corrective focused A/B:</strong> shared GPU reservation reduced from 0.93 to 0.91; GOLDEN and P-PAS+ each completed 5/5 8k/512 runs with LMCache and MTP-3 retained.</li>
         </ol>
     </main>
     <footer>

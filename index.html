@@ -779,9 +779,10 @@
                     <strong>4.90%</strong>, decode wall time by <strong>4.52%</strong> and makespan by
                     <strong>4.64%</strong> when one 100k cold prefill competed with three active decodes.
                     The dual-prefill case was effectively neutral. In the extended comparison, GOLDEN
-                    completed the short-decode series but stopped with CUDA OOM during the second 8k-agent
-                    repetition; P-PAS+ completed the full candidate sequence. The active profile is validated,
-                    while the exact cause of the GOLDEN failure is being retested.
+                    stopped with CUDA OOM in the MTP proposal path; an unchanged focused retry reproduced it.
+                    The shared GPU reservation was then reduced from 0.93 to 0.91 for both profiles, preserving
+                    LMCache and MTP-3. Under that corrected envelope, GOLDEN and P-PAS+ each completed 5/5
+                    focused 8k-agent runs without OOM. The active P-PAS+ profile remains validated.
                 </p>
                 <p class="patch-sha">
                     <span>Measured on CT112 · 2026-09-04</span>

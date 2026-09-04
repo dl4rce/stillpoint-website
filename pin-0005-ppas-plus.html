@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIN-0005 — P-PAS+ Adaptive Scheduling | Stillpoint</title>
+    <meta name="description" content="Stillpoint PIN-0005: P-PAS+ adaptive scheduling on Qwen3.8 with vLLM 0.28, LMCache, MTP-3, FlashInfer XQA and long-context validation.">
+    <link rel="canonical" href="https://stillpointlab.dev/pin-0005-ppas-plus.html">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
+    <style>
+        @font-face { font-family:'Press Start 2P'; src:url('fonts/PressStart2P-Regular.ttf') format('truetype'); font-display:swap; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        :root { --green:#39ff14; --cyan:#00fff7; --magenta:#ff00ff; --yellow:#ffe600; --orange:#ff6600; --dark:#0a0a0f; --card:#101018; --border:#1a1a2e; --text:#c0c0d0; --dim:#707085; --pixel:'Press Start 2P',ui-monospace,Menlo,monospace; --mono:ui-monospace,'SF Mono',Menlo,monospace; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--dark); color:var(--text); line-height:1.75; }
+        nav { padding:16px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+        nav .logo { font-family:var(--pixel); font-size:12px; color:var(--cyan); text-decoration:none; }
+        nav a { color:var(--text); text-decoration:none; font-size:14px; }
+        main { max-width:900px; margin:0 auto; padding:60px 24px 90px; }
+        .eyebrow { color:var(--cyan); font-family:var(--mono); font-size:12px; letter-spacing:.08em; margin-bottom:10px; }
+        h1 { color:var(--magenta); font-size:clamp(24px,4vw,38px); line-height:1.25; margin-bottom:14px; }
+        h2 { color:#fff; font-size:21px; margin:40px 0 12px; padding-top:8px; border-top:1px solid var(--border); }
+        h3 { color:var(--cyan); font-size:16px; margin:24px 0 8px; }
+        p { margin-bottom:15px; }
+        a { color:var(--cyan); }
+        code { font-family:var(--mono); color:var(--cyan); font-size:.92em; }
+        ul, ol { padding-left:24px; margin:10px 0 18px; }
+        li { margin:7px 0; }
+        .status { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 26px; }
+        .pill { border:1px solid var(--border); border-radius:999px; padding:5px 11px; font-family:var(--mono); font-size:11px; }
+        .green { color:var(--green); border-color:rgba(57,255,20,.4); }
+        .yellow { color:var(--yellow); border-color:rgba(255,230,0,.4); }
+        .abstract, .credit, .note { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px 24px; margin:22px 0; }
+        .credit { border-color:rgba(0,255,247,.25); }
+        .note { border-style:dashed; color:var(--yellow); border-color:rgba(255,230,0,.35); }
+        table { width:100%; border-collapse:collapse; margin:16px 0 22px; font-family:var(--mono); font-size:12px; }
+        th, td { padding:9px 8px; border-bottom:1px solid var(--border); text-align:right; vertical-align:top; }
+        th:first-child, td:first-child { text-align:left; }
+        th { color:var(--dim); text-transform:uppercase; font-size:10px; letter-spacing:.04em; }
+        .good { color:var(--green); }
+        .neutral { color:var(--yellow); }
+        .setup { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 24px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px 24px; }
+        .setup div { border-bottom:1px solid var(--border); padding-bottom:8px; }
+        .setup strong { display:block; color:#fff; font-size:13px; }
+        .setup span { color:var(--dim); font-size:13px; }
+        footer { border-top:1px solid var(--border); padding:30px 24px; text-align:center; color:var(--dim); font-size:13px; }
+        footer a { text-decoration:none; }
+        @media (max-width:700px) { .setup { grid-template-columns:1fr; } table { font-size:10px; } th,td { padding:6px 4px; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="logo" href="index.html">◉ STILLPOINT</a>
+        <a href="whitepapers.html">← Whitepapers</a>
+    </nav>
+    <main>
+        <div class="eyebrow">PIN-0005 · LIVING WHITEPAPER · 2026-09-04</div>
+        <h1>P-PAS+ Adaptive Scheduling With Persistent Stillpoint Restore</h1>
+        <div class="status">
+            <span class="pill green">candidate gates passed</span>
+            <span class="pill green">40/40 repeated workloads</span>
+            <span class="pill green">validated active profile</span>
+            <span class="pill yellow">GOLDEN failure under retest</span>
+        </div>
+
+        <section class="abstract">
+            <strong>Abstract.</strong> We ported prefill-pressure adaptive scheduling to a production-like
+            Qwen3.8-27B serving profile while preserving persistent LMCache restore, MTP-3, FlashInfer
+            XQA, FP8 KV cache, 131k context and the OpenAI-compatible capability surface. P-PAS+ passed
+            every candidate correctness and restore gate and completed 40/40 repeated workloads. In a
+            preliminary paired canary, it improved decode throughput by 4.90% in the intended
+            one-large-prefill pressure case and was effectively neutral in the dual-prefill case.
+        </section>
+
+        <section class="credit">
+            <strong>Prior work and thanks.</strong> P-PAS and P-PAS+ were developed by
+            <strong>Timo Sämann</strong>. We thank him for publishing the implementation and research
+            openly. Original sources:
+            <a href="https://github.com/TimoSaemann/ppas-vllm/tree/ppas-plus">P-PAS+ GitHub repository</a>
+            and <a href="https://arxiv.org/abs/2608.15171">P-PAS: Prefill-Pressure Adaptive Scheduling for Long-Context LLM Serving</a>.
+            Stillpoint’s contribution is an independent adaptation and validation on a different model,
+            vLLM version, GPU class and cache architecture; it is not the original P-PAS+ work.
+        </section>
+
+        <h2>1. Problem</h2>
+        <p>
+            A long cold prefill can monopolize the scheduler token budget while active requests are
+            decoding. Persistent Stillpoint restore eliminates prefill work for exact cached prefixes,
+            but unavoidable cold or partially cached prefills still occur. P-PAS+ complements LMCache:
+            restore avoids work when possible; adaptive scheduling limits interference when the work
+            cannot be avoided.
+        </p>
+
+        <h2>2. Stillpoint adaptation</h2>
+        <p>
+            Upstream values could not be copied directly. Qwen3.8 with LMCache hybrid alignment uses a
+            unified block size of 1600 and requires the configured <code>max_num_batched_tokens</code>
+            to remain in <code>[1600, 3200)</code>. We retained the validated configured maximum and
+            applied only a runtime pressure cap:
+        </p>
+        <ul>
+            <li><code>B_max = 3199</code></li>
+            <li><code>B_cap = 2048</code></li>
+            <li><code>large_prefill_threshold = 65536</code> remaining tokens</li>
+            <li>Pressure rule A: at least two active prefills and one running decode</li>
+            <li>Pressure rule B: one large running prefill and at least two running decodes</li>
+        </ul>
+        <p>The configured maximum stays unchanged so MTP draft-slot accounting and LMCache input-budget validation retain their established behavior.</p>
+
+        <h2>3. Lab setup</h2>
+        <div class="setup">
+            <div><strong>Model</strong><span>Qwen3.8-27B W4A16 AWQ</span></div>
+            <div><strong>Runtime</strong><span>vLLM 0.28.0 · tensor parallel 2</span></div>
+            <div><strong>GPU</strong><span>2 × NVIDIA RTX PRO 2000 Blackwell 16 GB · SM120</span></div>
+            <div><strong>Attention</strong><span>FlashInfer XQA · PIECEWISE CUDA graphs</span></div>
+            <div><strong>KV cache</strong><span>FP8 · 160,799-token GPU capacity</span></div>
+            <div><strong>Speculative decoding</strong><span>MTP-3</span></div>
+            <div><strong>Persistent cache</strong><span>LMCache multiprocess · disk-backed L2</span></div>
+            <div><strong>Hybrid invariant</strong><span>Mamba align · unified block size 1600</span></div>
+        </div>
+
+        <h2>4. Methodology and gates</h2>
+        <p>The candidate had to preserve the complete production feature set, not merely start or improve one synthetic trace.</p>
+        <ul>
+            <li>Deterministic generation: 20 identical answers and five identical 200-token generations</li>
+            <li>Buried-key retrieval at 13k, 30k, 60k, 66.7k, 112k and 130k</li>
+            <li>LMCache store and restore from 5k through 112k, including restart recovery</li>
+            <li>Model discovery, non-streaming completion and SSE streaming</li>
+            <li>German output, reasoning parser, native tool calling and deterministic coding</li>
+            <li>Real image processing path and eight-request queue submission</li>
+            <li>Repeated short, agent, long-context, concurrent, heterogeneous and mixed-pressure workloads</li>
+        </ul>
+
+        <h2>5. Paired GOLDEN canary</h2>
+        <p>Two identical repetitions were run per scenario. These are preliminary medians, not universal performance claims.</p>
+        <table>
+            <thead><tr><th>Scenario / metric</th><th>GOLDEN</th><th>P-PAS+</th><th>Change</th></tr></thead>
+            <tbody>
+                <tr><td>1 × 100k prefill + 3 decodes · decode wall</td><td>456.19 s</td><td>435.59 s</td><td class="good">4.52% better</td></tr>
+                <tr><td>Same · decode throughput</td><td>1.751 tok/s</td><td>1.837 tok/s</td><td class="good">4.90% better</td></tr>
+                <tr><td>Same · makespan</td><td>457.07 s</td><td>435.88 s</td><td class="good">4.64% better</td></tr>
+                <tr><td>2 × 56k prefills + 2 decodes · decode wall</td><td>134.13 s</td><td>134.44 s</td><td class="neutral">0.23% worse</td></tr>
+                <tr><td>Same · decode throughput</td><td>5.957 tok/s</td><td>5.944 tok/s</td><td class="neutral">0.23% worse</td></tr>
+                <tr><td>Same · makespan</td><td>134.12 s</td><td>134.65 s</td><td class="neutral">0.40% worse</td></tr>
+            </tbody>
+        </table>
+
+        <h2>6. Clean candidate validation</h2>
+        <p>Each workload below completed five repetitions without a candidate request error.</p>
+        <table>
+            <thead><tr><th>Workload</th><th>Median wall</th><th>Median rate</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr><td>Short decode · 512 output</td><td>9.522 s</td><td>54.491 tok/s</td><td class="good">5/5</td></tr>
+                <tr><td>8k agent · 512 output</td><td>17.698 s</td><td>49.501 tok/s</td><td class="good">5/5</td></tr>
+                <tr><td>111k prompt · 256 output</td><td>142.437 s</td><td>43.521 tok/s</td><td class="good">5/5</td></tr>
+                <tr><td>4 concurrent short</td><td>12.519 s</td><td>163.597 aggregate tok/s</td><td class="good">5/5</td></tr>
+                <tr><td>4 concurrent 111k</td><td>569.211 s</td><td>0.899 aggregate tok/s</td><td class="good">5/5</td></tr>
+                <tr><td>Heterogeneous 16k–130k</td><td>304.698 s</td><td>2.310 aggregate tok/s</td><td class="good">5/5</td></tr>
+                <tr><td>1 large prefill + 3 decodes</td><td>474.043 s</td><td>1.730 decode tok/s</td><td class="good">5/5</td></tr>
+                <tr><td>2 prefills + 2 decodes</td><td>140.252 s</td><td>5.698 decode tok/s</td><td class="good">5/5</td></tr>
+            </tbody>
+        </table>
+        <p>MTP acceptance was 59.15% in the steady suite and 61.75% under mixed pressure.</p>
+
+        <h2>7. GOLDEN failure and current interpretation</h2>
+        <p>
+            The extended GOLDEN arm started successfully, passed its real health check and completed
+            five short-decode repetitions. During the second 8k-agent repetition, both workers stopped
+            on CUDA OOM in the MTP proposal path and vLLM raised <code>EngineDeadError</code>. P-PAS+
+            completed the full candidate sequence.
+        </p>
+        <div class="note">
+            This proves that the P-PAS+ profile is operational and stable under the tested sequence. It
+            does not by itself prove that P-PAS+ universally uses less memory, prevents OOM, or is faster
+            for every workload. The failed GOLDEN case is being rerun unchanged; this paper will be
+            updated with the outcome.
+        </div>
+
+        <h2>8. Artifacts and reproducibility</h2>
+        <ul>
+            <li>Upstream implementation: <a href="https://github.com/TimoSaemann/ppas-vllm/tree/ppas-plus">TimoSaemann/ppas-vllm</a></li>
+            <li>Upstream paper: <a href="https://arxiv.org/abs/2608.15171">arXiv:2608.15171</a></li>
+            <li>Stillpoint adaptation: vLLM 0.28 scheduler port with a switchable isolated runtime profile</li>
+            <li>Evidence set: raw JSON gates, benchmark results, service state and OOM journal, all SHA-256 verified after transfer</li>
+        </ul>
+        <p>The engineering repository retains the exact patch, pinned upstream snapshot, raw evidence and SHA-256 manifests. Public artifact links will be added when that repository’s disclosure review is complete.</p>
+
+        <h2>9. Run history</h2>
+        <ol>
+            <li><strong>2026-09-04 · Preliminary paired canary:</strong> target case improved by approximately 5%; dual-prefill case neutral.</li>
+            <li><strong>2026-09-04 · Clean candidate validation:</strong> all gates and 40/40 repeated candidate workloads passed.</li>
+            <li><strong>2026-09-04 · Extended GOLDEN arm:</strong> CUDA OOM during the second 8k-agent repetition; focused unchanged retry in progress.</li>
+        </ol>
+    </main>
+    <footer>Stillpoint — an open-source lab by <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a></footer>
+</body>
+</html>

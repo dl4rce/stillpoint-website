@@ -10,7 +10,9 @@ no trackers.
 | File | Role |
 |------|------|
 | `index.html` | Landing page — the footprints-vs-standing-place metaphor, measured PIN-0001 results, how the pieces fit together |
-| `whitepaper.html` | Whitepaper outline and the PIN-0001 result table |
+| `whitepapers.html` | Index of living research papers and their validation status |
+| `whitepaper.html` | PIN-0001 standing-place restore paper and measured result table |
+| `pin-0005-ppas-plus.html` | PIN-0005 P-PAS+ paper: upstream credit, adaptation, lab setup, gates, results and run history |
 | `imprint.html` | Impressum (§ 5 TMG) and privacy statement |
 | `fonts/` | Press Start 2P (OFL 1.1), used for the logo only |
 | `CNAME` | Custom-domain record for GitHub Pages |

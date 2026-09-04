@@ -750,6 +750,31 @@
                     <span>12/12 verified on rev 2 (<code>ec14d5012…</code>) on 2026-08-22, applied to a pristine <code>lmcache==0.5.3</code> install.</span>
                 </p>
             </div>
+            <div class="patch-box">
+                <div class="patch-head">PIN-0005 — P-PAS+ validated with the full Stillpoint stack</div>
+                <p>
+                    The adaptive scheduler completed every correctness, capability, long-context,
+                    LMCache restore, MTP-3 and API gate, followed by <strong>40/40 successful repeated
+                    candidate workloads</strong>. It ran with the complete production profile: Qwen3.8-27B,
+                    vLLM 0.28.0, FlashInfer XQA, PIECEWISE CUDA graphs, FP8 KV and persistent LMCache.
+                </p>
+                <p>
+                    In a preliminary paired two-repetition canary, P-PAS+ improved decode throughput by
+                    <strong>4.90%</strong>, decode wall time by <strong>4.52%</strong> and makespan by
+                    <strong>4.64%</strong> when one 100k cold prefill competed with three active decodes.
+                    The dual-prefill case was effectively neutral. In the extended comparison, GOLDEN
+                    completed the short-decode series but stopped with CUDA OOM during the second 8k-agent
+                    repetition; P-PAS+ completed the full candidate sequence. The active profile is validated,
+                    while the exact cause of the GOLDEN failure is being retested.
+                </p>
+                <p class="patch-sha">
+                    <span>Measured on CT112 · 2026-09-04</span>
+                    <span class="sep">·</span>
+                    <span>candidate gates passed</span>
+                    <span class="sep">·</span>
+                    <span>40/40 repeated workloads</span>
+                </p>
+            </div>
             <div class="pin-list">
                 <div class="pin-item">
                     <span><span class="pin-id">PIN-0001</span> vLLM + LMCache still-point store/restore for Qwen3.8 GDN</span>
@@ -766,6 +791,10 @@
                 <div class="pin-item">
                     <span><span class="pin-id">PIN-0004</span> Cross-model still-point transfer — small-to-large agent cascades without re-prefill</span>
                     <span class="status-next">○ research</span>
+                </div>
+                <div class="pin-item">
+                    <span><span class="pin-id">PIN-0005</span> P-PAS+ adaptive scheduling with persistent Stillpoint restore</span>
+                    <span class="status-done">✓ validated profile</span>
                 </div>
             </div>
         </div>

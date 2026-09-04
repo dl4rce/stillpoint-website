@@ -4,8 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIN-0005 — P-PAS+ Adaptive Scheduling | Stillpoint</title>
-    <meta name="description" content="Stillpoint PIN-0005: P-PAS+ adaptive scheduling on Qwen3.8 with vLLM 0.28, LMCache, MTP-3, FlashInfer XQA and long-context validation.">
+    <meta name="description" content="Scientific validation of P-PAS+ adaptive scheduling on Qwen3.8 with vLLM 0.28, LMCache, MTP-3 and long-context inference: methods, test suite, results and caveats.">
+    <meta name="keywords" content="P-PAS+, P-PAS vLLM, prefill-pressure adaptive scheduling, long-context inference, vLLM scheduler, LMCache, Qwen3.8, MTP speculative decoding, prefill decode interference, LLM serving benchmark">
+    <meta name="author" content="4rce.com Digital Technologies GmbH">
+    <meta name="robots" content="index, follow, max-snippet:-1">
     <link rel="canonical" href="https://stillpointlab.dev/pin-0005-ppas-plus.html">
+    <link rel="alternate" type="application/pdf" href="https://stillpointlab.dev/pdf/pin-0005-ppas-plus.pdf" title="PIN-0005 PDF">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://stillpointlab.dev/pin-0005-ppas-plus.html">
+    <meta property="og:title" content="P-PAS+ Adaptive Scheduling With Persistent Stillpoint Restore">
+    <meta property="og:description" content="All candidate gates and 40/40 repeated workloads passed; paired target-case decode throughput improved by 4.90%. Full setup, methods, caveats and references.">
+    <meta property="article:published_time" content="2026-09-04">
+    <meta property="article:modified_time" content="2026-09-04">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PIN-0005: P-PAS+ on Qwen3.8, vLLM and LMCache">
+    <meta name="twitter:description" content="Scientific test setup, equivalence gates, repeated results, caveats and reproducibility for a production-like P-PAS+ adaptation.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ScholarlyArticle",
+      "headline": "P-PAS+ Adaptive Scheduling With Persistent Stillpoint Restore",
+      "description": "Independent adaptation and validation of P-PAS+ on Qwen3.8 with vLLM 0.28, LMCache, MTP-3 and long-context inference.",
+      "datePublished": "2026-09-04",
+      "dateModified": "2026-09-04",
+      "author": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH", "url": "https://4rce.com"},
+      "publisher": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH", "url": "https://4rce.com"},
+      "mainEntityOfPage": "https://stillpointlab.dev/pin-0005-ppas-plus.html",
+      "url": "https://stillpointlab.dev/pin-0005-ppas-plus.html",
+      "encoding": {"@type": "MediaObject", "contentUrl": "https://stillpointlab.dev/pdf/pin-0005-ppas-plus.pdf", "encodingFormat": "application/pdf"},
+      "keywords": ["P-PAS+", "vLLM scheduler", "long-context inference", "LMCache", "Qwen3.8", "MTP speculative decoding", "prefill decode interference"],
+      "citation": [
+        {"@type": "ScholarlyArticle", "name": "P-PAS: Prefill-Pressure Adaptive Scheduling for Long-Context LLM Serving", "url": "https://arxiv.org/abs/2608.15171", "author": {"@type": "Person", "name": "Timo Sämann"}},
+        {"@type": "SoftwareSourceCode", "name": "ppas-vllm", "codeRepository": "https://github.com/TimoSaemann/ppas-vllm/tree/ppas-plus", "license": "https://www.apache.org/licenses/LICENSE-2.0"}
+      ],
+      "copyrightHolder": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH"},
+      "copyrightYear": 2026
+    }
+    </script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
     <style>
         @font-face { font-family:'Press Start 2P'; src:url('fonts/PressStart2P-Regular.ttf') format('truetype'); font-display:swap; }
@@ -29,7 +64,14 @@
         .pill { border:1px solid var(--border); border-radius:999px; padding:5px 11px; font-family:var(--mono); font-size:11px; }
         .green { color:var(--green); border-color:rgba(57,255,20,.4); }
         .yellow { color:var(--yellow); border-color:rgba(255,230,0,.4); }
-        .abstract, .credit, .note { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px 24px; margin:22px 0; }
+        .abstract, .credit, .note, .executive { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px 24px; margin:22px 0; }
+        .executive { border-color:rgba(57,255,20,.35); }
+        .executive h2 { border:0; padding:0; margin:0 0 14px; color:var(--green); }
+        .executive-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 24px; }
+        .executive-grid div { border-bottom:1px solid var(--border); padding-bottom:9px; }
+        .executive-grid strong { display:block; color:#fff; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+        .executive-grid span { color:var(--dim); font-size:14px; }
+        .download { display:inline-block; margin-top:18px; padding:10px 16px; border:1px solid var(--cyan); border-radius:4px; color:var(--cyan); text-decoration:none; font-weight:700; }
         .credit { border-color:rgba(0,255,247,.25); }
         .note { border-style:dashed; color:var(--yellow); border-color:rgba(255,230,0,.35); }
         table { width:100%; border-collapse:collapse; margin:16px 0 22px; font-family:var(--mono); font-size:12px; }
@@ -44,7 +86,7 @@
         .setup span { color:var(--dim); font-size:13px; }
         footer { border-top:1px solid var(--border); padding:30px 24px; text-align:center; color:var(--dim); font-size:13px; }
         footer a { text-decoration:none; }
-        @media (max-width:700px) { .setup { grid-template-columns:1fr; } table { font-size:10px; } th,td { padding:6px 4px; } }
+        @media (max-width:700px) { .setup, .executive-grid { grid-template-columns:1fr; } table { font-size:10px; } th,td { padding:6px 4px; } }
     </style>
 </head>
 <body>
@@ -61,6 +103,19 @@
             <span class="pill green">validated active profile</span>
             <span class="pill yellow">GOLDEN failure under retest</span>
         </div>
+
+        <section class="executive" aria-labelledby="executive-summary">
+            <h2 id="executive-summary">Executive summary</h2>
+            <div class="executive-grid">
+                <div><strong>Problem</strong><span>Large cold prefills interfere with active decoding under scheduler pressure.</span></div>
+                <div><strong>Contribution</strong><span>P-PAS+ ported to vLLM 0.28 without removing LMCache, MTP-3 or long-context support.</span></div>
+                <div><strong>Strongest result</strong><span>+4.90% decode throughput and −4.52% decode wall time in the target paired scenario.</span></div>
+                <div><strong>Validation</strong><span>All candidate gates and 40/40 repeated candidate workloads passed.</span></div>
+                <div><strong>Current status</strong><span>Validated active profile; unchanged GOLDEN failure is under focused retest.</span></div>
+                <div><strong>Key limitation</strong><span>The paired gain is a two-repetition median for one workload shape, not a universal speed claim.</span></div>
+            </div>
+            <a class="download" href="pdf/pin-0005-ppas-plus.pdf" type="application/pdf">Download PDF</a>
+        </section>
 
         <section class="abstract">
             <strong>Abstract.</strong> We ported prefill-pressure adaptive scheduling to a production-like
@@ -81,7 +136,7 @@
             vLLM version, GPU class and cache architecture; it is not the original P-PAS+ work.
         </section>
 
-        <h2>1. Problem</h2>
+        <h2>1. Problem statement</h2>
         <p>
             A long cold prefill can monopolize the scheduler token budget while active requests are
             decoding. Persistent Stillpoint restore eliminates prefill work for exact cached prefixes,
@@ -90,7 +145,21 @@
             cannot be avoided.
         </p>
 
-        <h2>2. Stillpoint adaptation</h2>
+        <h2>2. Research questions and hypotheses</h2>
+        <ol>
+            <li><strong>RQ1:</strong> Can P-PAS+ be ported to vLLM 0.28 and Qwen3.8 without violating the LMCache hybrid-alignment scheduler invariant?</li>
+            <li><strong>RQ2:</strong> Does the candidate preserve deterministic output, long-context retrieval, LMCache restart restore, MTP-3, API compatibility, tool calling, reasoning and image processing?</li>
+            <li><strong>RQ3:</strong> Does adaptive pressure capping protect active decode work when one very large cold prefill overlaps multiple decodes?</li>
+            <li><strong>RQ4:</strong> Does the candidate avoid material regression when two medium-long prefills overlap two decodes?</li>
+        </ol>
+        <p><strong>H1:</strong> the candidate passes every declared feature-equivalence and restore gate. <strong>H2:</strong> decode wall time and throughput improve in the one-large-prefill pressure case. <strong>H3:</strong> the dual-prefill case remains within ordinary run variance. Any correctness failure, cache corruption, engine death, or material non-target regression rejects the candidate.</p>
+
+        <h2>3. Related work</h2>
+        <p>
+            Sämann introduced Prefill-Pressure Adaptive Scheduling and the P-PAS+ heterogeneous-pressure extension for long-context serving [1, 2]. Stillpoint’s persistent restore work addresses a complementary layer: exact cached prefixes avoid prefill computation entirely, while P-PAS+ controls interference from prefills that remain unavoidable. The present work is an independent port and validation, not the original scheduling contribution.
+        </p>
+
+        <h2>4. Stillpoint adaptation</h2>
         <p>
             Upstream values could not be copied directly. Qwen3.8 with LMCache hybrid alignment uses a
             unified block size of 1600 and requires the configured <code>max_num_batched_tokens</code>
@@ -106,7 +175,7 @@
         </ul>
         <p>The configured maximum stays unchanged so MTP draft-slot accounting and LMCache input-budget validation retain their established behavior.</p>
 
-        <h2>3. Lab setup</h2>
+        <h2>5. System under test and lab setup</h2>
         <div class="setup">
             <div><strong>Model</strong><span>Qwen3.8-27B W4A16 AWQ</span></div>
             <div><strong>Runtime</strong><span>vLLM 0.28.0 · tensor parallel 2</span></div>
@@ -118,7 +187,7 @@
             <div><strong>Hybrid invariant</strong><span>Mamba align · unified block size 1600</span></div>
         </div>
 
-        <h2>4. Methodology and gates</h2>
+        <h2>6. Test suite and experimental methodology</h2>
         <p>The candidate had to preserve the complete production feature set, not merely start or improve one synthetic trace.</p>
         <ul>
             <li>Deterministic generation: 20 identical answers and five identical 200-token generations</li>
@@ -130,7 +199,7 @@
             <li>Repeated short, agent, long-context, concurrent, heterogeneous and mixed-pressure workloads</li>
         </ul>
 
-        <h2>5. Paired GOLDEN canary</h2>
+        <h2>7. Results: paired GOLDEN canary</h2>
         <p>Two identical repetitions were run per scenario. These are preliminary medians, not universal performance claims.</p>
         <table>
             <thead><tr><th>Scenario / metric</th><th>GOLDEN</th><th>P-PAS+</th><th>Change</th></tr></thead>
@@ -144,7 +213,7 @@
             </tbody>
         </table>
 
-        <h2>6. Clean candidate validation</h2>
+        <h2>8. Results: clean candidate validation</h2>
         <p>Each workload below completed five repetitions without a candidate request error.</p>
         <table>
             <thead><tr><th>Workload</th><th>Median wall</th><th>Median rate</th><th>Result</th></tr></thead>
@@ -161,7 +230,7 @@
         </table>
         <p>MTP acceptance was 59.15% in the steady suite and 61.75% under mixed pressure.</p>
 
-        <h2>7. GOLDEN failure and current interpretation</h2>
+        <h2>9. Failure analysis and current interpretation</h2>
         <p>
             The extended GOLDEN arm started successfully, passed its real health check and completed
             five short-decode repetitions. During the second 8k-agent repetition, both workers stopped
@@ -175,7 +244,16 @@
             updated with the outcome.
         </div>
 
-        <h2>8. Artifacts and reproducibility</h2>
+        <h2>10. Threats to validity, caveats and non-claims</h2>
+        <ul>
+            <li>The paired A/B figures are medians from two repetitions per scenario and do not establish production-wide performance.</li>
+            <li>The strongest improvement was workload-specific; the dual-prefill result was effectively neutral and slightly favored GOLDEN numerically.</li>
+            <li>The GOLDEN OOM does not prove that P-PAS+ uses less memory, prevents OOM, or caused the difference.</li>
+            <li>Results apply to the declared Qwen3.8, vLLM 0.28, LMCache, MTP-3, FlashInfer and dual-SM120 setup.</li>
+            <li>Historical champion numbers were not substituted for the incomplete contemporaneous extended control arm.</li>
+        </ul>
+
+        <h2>11. Reproducibility and artifact availability</h2>
         <ul>
             <li>Upstream implementation: <a href="https://github.com/TimoSaemann/ppas-vllm/tree/ppas-plus">TimoSaemann/ppas-vllm</a></li>
             <li>Upstream paper: <a href="https://arxiv.org/abs/2608.15171">arXiv:2608.15171</a></li>
@@ -184,13 +262,34 @@
         </ul>
         <p>The engineering repository retains the exact patch, pinned upstream snapshot, raw evidence and SHA-256 manifests. Public artifact links will be added when that repository’s disclosure review is complete.</p>
 
-        <h2>9. Run history</h2>
+        <h2>12. Conclusion</h2>
+        <p>
+            P-PAS+ is a validated active Stillpoint profile: it preserves the full production capability set and completed the entire repeated candidate campaign. The preliminary paired evidence supports the intended scheduling benefit when one very large prefill competes with active decoding, while showing no meaningful benefit in the dual-prefill case. The focused unchanged GOLDEN retry determines whether the extended-run OOM is reproducible; it does not change the candidate’s independently passed gates.
+        </p>
+
+        <h2>13. Acknowledgements</h2>
+        <p>We thank Timo Sämann for publishing P-PAS/P-PAS+ and its implementation openly, enabling independent adaptation and validation. We also acknowledge the vLLM, LMCache and FlashInfer open-source communities whose software forms the evaluated stack.</p>
+
+        <h2>14. References</h2>
+        <ol>
+            <li>T. Sämann, “P-PAS: Prefill-Pressure Adaptive Scheduling for Long-Context LLM Serving,” arXiv:2608.15171, 2026. <a href="https://arxiv.org/abs/2608.15171">https://arxiv.org/abs/2608.15171</a>.</li>
+            <li>T. Sämann, “ppas-vllm,” <code>ppas-plus</code> branch, commit <code>50340d20a2da5ab6fec704dceb83cecf8734dbb5</code>, Apache-2.0. <a href="https://github.com/TimoSaemann/ppas-vllm/tree/ppas-plus">GitHub repository</a>. Accessed 2026-09-04.</li>
+            <li>vLLM Project, “vLLM: Easy, Fast, and Cheap LLM Serving with PagedAttention,” software version 0.28.0. <a href="https://github.com/vllm-project/vllm">GitHub repository</a>. Accessed 2026-09-04.</li>
+            <li>LMCache Project, “LMCache,” persistent KV-cache software. <a href="https://github.com/LMCache/LMCache">GitHub repository</a>. Accessed 2026-09-04.</li>
+            <li>FlashInfer Project, “FlashInfer,” attention kernels for LLM serving. <a href="https://github.com/flashinfer-ai/flashinfer">GitHub repository</a>. Accessed 2026-09-04.</li>
+        </ol>
+
+        <h2>15. Revision and run history</h2>
         <ol>
             <li><strong>2026-09-04 · Preliminary paired canary:</strong> target case improved by approximately 5%; dual-prefill case neutral.</li>
             <li><strong>2026-09-04 · Clean candidate validation:</strong> all gates and 40/40 repeated candidate workloads passed.</li>
             <li><strong>2026-09-04 · Extended GOLDEN arm:</strong> CUDA OOM during the second 8k-agent repetition; focused unchanged retry in progress.</li>
         </ol>
     </main>
-    <footer>Stillpoint — an open-source lab by <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a></footer>
+    <footer>
+        <p>© 2026 <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a>. All rights reserved.</p>
+        <p>Stillpoint and Stillpoint Lab are research project names of 4rce.com. Third-party product names, papers, code and trademarks remain the property of their respective owners.</p>
+        <p><a href="imprint.html">Imprint &amp; Privacy</a></p>
+    </footer>
 </body>
 </html>

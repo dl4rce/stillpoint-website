@@ -3,9 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whitepaper outline — Stillpoint</title>
-    <meta name="description" content="Outline of the Stillpoint whitepaper: standing-place state for hybrid GDN models, lossless session still-points first, LinearKV and cross-model transfer as research.">
+    <title>PIN-0001 — Persistent LMCache Restore for Hybrid GDN Models | Stillpoint</title>
+    <meta name="description" content="Scientific results for persistent hybrid GDN state restore with vLLM and LMCache: root causes, patch, 12/12 test suite, 97–98.8% cache hit and up to 7.6x speedup.">
+    <meta name="keywords" content="LMCache hybrid GDN restore, persistent KV cache, Qwen3.8, vLLM restart restore, Gated DeltaNet, exact prefix cache, TTFT speedup, LMCache bug fix">
+    <meta name="author" content="4rce.com Digital Technologies GmbH">
+    <meta name="robots" content="index, follow, max-snippet:-1">
     <link rel="canonical" href="https://stillpointlab.dev/whitepaper.html">
+    <link rel="alternate" type="application/pdf" href="https://stillpointlab.dev/pdf/pin-0001-persistent-restore.pdf" title="PIN-0001 PDF">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://stillpointlab.dev/whitepaper.html">
+    <meta property="og:title" content="Persistent LMCache Restore for Hybrid GDN Models">
+    <meta property="og:description" content="Exact restore across a full vLLM restart: 12/12 tests, 97–98.8% hit and up to 7.6x lower end-to-end wall time.">
+    <meta property="article:published_time" content="2026-08-22">
+    <meta property="article:modified_time" content="2026-09-04">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PIN-0001: Persistent LMCache Restore for Hybrid GDN Models">
+    <meta name="twitter:description" content="Root causes, patch, reproducible hard suite and measured restore results for Qwen3.8 with vLLM and LMCache.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ScholarlyArticle",
+      "headline": "Persistent LMCache Restore for Hybrid GDN Models",
+      "datePublished": "2026-08-22",
+      "dateModified": "2026-09-04",
+      "author": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH", "url": "https://4rce.com"},
+      "publisher": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH", "url": "https://4rce.com"},
+      "mainEntityOfPage": "https://stillpointlab.dev/whitepaper.html",
+      "url": "https://stillpointlab.dev/whitepaper.html",
+      "encoding": {"@type": "MediaObject", "contentUrl": "https://stillpointlab.dev/pdf/pin-0001-persistent-restore.pdf", "encodingFormat": "application/pdf"},
+      "keywords": ["persistent KV cache", "LMCache", "hybrid GDN", "Qwen3.8", "vLLM restart restore", "TTFT"],
+      "copyrightHolder": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH"},
+      "copyrightYear": 2026
+    }
+    </script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
     <style>
         @font-face {
@@ -56,6 +86,13 @@
         li strong { color: #fff; }
         .result-card { padding: 24px 28px; }
         .result-card h2 { font-size: 18px; margin-bottom: 14px; }
+        .executive { background:var(--dark-card); border:1px solid rgba(57,255,20,.35); border-radius:12px; padding:22px 24px; margin:0 0 28px; }
+        .executive h2 { color:var(--neon-green); font-size:18px; margin-bottom:14px; }
+        .executive-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 24px; }
+        .executive-grid div { border-bottom:1px solid var(--border); padding-bottom:8px; }
+        .executive-grid strong { display:block; color:#fff; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+        .executive-grid span { color:var(--text-dim); font-size:14px; }
+        .download { display:inline-block; margin-top:18px; padding:10px 16px; border:1px solid var(--neon-cyan); border-radius:4px; color:var(--neon-cyan); text-decoration:none; font-weight:700; }
         .result-card p { font-size: 15px; margin: 0 0 14px; }
         .result-card ul { padding-left: 20px; margin: 0 0 14px; }
         .result-card ul li { margin: 8px 0; }
@@ -79,6 +116,7 @@
         @media (max-width: 640px) {
             .result-table { font-size: 11px; }
             .result-table th, .result-table td { padding: 5px 4px; }
+            .executive-grid { grid-template-columns:1fr; }
         }
         li span { color: var(--text-dim); display: block; font-size: 14px; }
         a { color: var(--neon-cyan); }
@@ -95,13 +133,24 @@
         <a class="back" href="whitepapers.html">← Whitepapers</a>
     </nav>
     <main>
-        <h1>Whitepaper</h1>
+        <h1>PIN-0001 — Persistent restore for hybrid GDN models</h1>
         <p class="lede">
-            Outline. PIN-0001 is green: GDN standing-place state now stores to disk and
-            restores across a full vLLM restart with the exact answer intact. The full
-            note is being written from that run.
+            Scientific report. Hybrid GDN standing-place state stores to disk and restores
+            across a full vLLM restart with the exact answer intact. Published 2026-08-22;
+            revised 2026-09-04.
         </p>
-        <p class="soon">Full PDF: in writing. Headline result below; sections are the table of contents.</p>
+        <section class="executive" aria-labelledby="executive-summary">
+            <h2 id="executive-summary">Executive summary</h2>
+            <div class="executive-grid">
+                <div><strong>Problem</strong><span>Hybrid GDN state was not restored correctly from persistent LMCache storage.</span></div>
+                <div><strong>Contribution</strong><span>A four-file LMCache 0.5.3 fix for hybrid full-attention page geometry and async metadata integrity.</span></div>
+                <div><strong>Strongest result</strong><span>Up to 7.6× lower end-to-end wall time and 9.9× lower TTFT after restart.</span></div>
+                <div><strong>Validation</strong><span>12/12 hard-suite pass with exact buried-key recovery and 97.0–98.8% cache hit.</span></div>
+                <div><strong>Current status</strong><span>PIN-0001 green; patch and public explainer available.</span></div>
+                <div><strong>Key limitation</strong><span>Exact-prefix restore only; changed prefixes must be compiled again.</span></div>
+            </div>
+            <a class="download" href="pdf/pin-0001-persistent-restore.pdf" type="application/pdf">Download PDF</a>
+        </section>
         <div class="card result-card" style="margin-bottom: 28px;">
             <h2 style="margin-top:0;">PIN-0001 result — measured 2026-08-22 (patch rev 2)</h2>
             <p>
@@ -194,7 +243,9 @@
         </p>
     </main>
     <footer>
-        <p>Stillpoint — an open-source lab by <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a></p>
+        <p>© 2026 <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a>. All rights reserved.</p>
+        <p>Stillpoint and Stillpoint Lab are research project names of 4rce.com. Third-party product names, papers, code and trademarks remain the property of their respective owners.</p>
+        <p><a href="imprint.html">Imprint &amp; Privacy</a></p>
     </footer>
 </body>
 </html>

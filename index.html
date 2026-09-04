@@ -5,16 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stillpoint — Compile Knowledge Into the Model's Standing Place</title>
     <meta name="description" content="Open lab: compile project knowledge into the recurrent state of a hybrid GDN model and restore it from disk. PIN-0001 is green — persistent restore across a full vLLM restart, 98.8% hit, up to 7.6x faster than cold prefill. Apache-2, by 4rce.com.">
-    <meta name="keywords" content="Stillpoint, GDN, Gated DeltaNet, Qwen3.8, LMCache, vLLM, persistent KV cache, prefix cache, LinearKV, hybrid LLM, recurrent state, AI agent memory, Flaiwheel">
+    <meta name="keywords" content="Stillpoint, persistent KV cache, hybrid GDN, Gated DeltaNet, Qwen3.8, LMCache, vLLM, P-PAS+, long-context inference, prefill scheduling, MTP speculative decoding, recurrent state, AI agent memory">
     <meta name="author" content="4rce.com Digital Technologies GmbH">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://stillpointlab.dev/">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://stillpointlab.dev/">
-    <meta property="og:title" content="Stillpoint — The Model's Standing Place">
-    <meta property="og:description" content="We don't cache replies. We compile your knowledge into the model's standing place so the agent doesn't pay to rediscover it. PIN-0001 green: persistent restore across a full restart, up to 7.6x faster than cold prefill.">
-    <meta property="og:site_name" content="Stillpoint">
+    <meta property="og:title" content="Stillpoint Lab — Persistent State for Hybrid LLMs">
+    <meta property="og:description" content="Measured research on persistent LMCache restore, hybrid GDN state, vLLM, Qwen3.8 and P-PAS+ long-context scheduling. PIN-0001 green; PIN-0005 validated.">
+    <meta property="og:site_name" content="Stillpoint Lab">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Stillpoint Lab — Persistent State for Hybrid LLMs">
+    <meta name="twitter:description" content="Reproducible lab results for LMCache restore, hybrid GDN models and P-PAS+ long-context scheduling.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ResearchProject",
+      "name": "Stillpoint Lab",
+      "url": "https://stillpointlab.dev/",
+      "description": "Open research on persistent standing-place restore and adaptive scheduling for hybrid GDN language models.",
+      "founder": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH", "url": "https://4rce.com"},
+      "keywords": ["persistent KV cache", "hybrid GDN", "LMCache", "vLLM", "Qwen3.8", "P-PAS+", "long-context inference", "MTP speculative decoding"],
+      "subjectOf": {"@type": "CollectionPage", "url": "https://stillpointlab.dev/whitepapers.html", "name": "Stillpoint Whitepapers"}
+    }
+    </script>
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
 
@@ -801,12 +817,13 @@
     </section>
 
     <footer>
-        <p>Stillpoint — an open-source lab by <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a></p>
+        <p>© 2026 <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a>. All rights reserved.</p>
+        <p style="margin-top: 8px;">Stillpoint and Stillpoint Lab are research project names of 4rce.com. Third-party product names, papers, code and trademarks remain the property of their respective owners.</p>
         <p style="margin-top: 8px;">
             <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">GitHub</a> ·
             <a href="https://flaiwheel.app">Flaiwheel</a> ·
             <a href="whitepapers.html">Whitepapers</a> ·
-            <a href="imprint.html">Imprint</a>
+            <a href="imprint.html">Imprint &amp; Privacy</a>
         </p>
     </footer>
 </div>

@@ -4,8 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whitepapers — Stillpoint Lab</title>
-    <meta name="description" content="Stillpoint Lab whitepapers: reproducible research on persistent hybrid-model state, LMCache restore, and adaptive P-PAS+ scheduling.">
+    <meta name="description" content="Scientific whitepapers from Stillpoint Lab on persistent KV cache, hybrid GDN state, LMCache restore, vLLM, Qwen3.8 and P-PAS+ long-context scheduling.">
+    <meta name="keywords" content="LLM serving whitepapers, persistent KV cache research, LMCache, hybrid GDN, Qwen3.8, vLLM, P-PAS+, long-context inference, speculative decoding">
+    <meta name="author" content="4rce.com Digital Technologies GmbH">
+    <meta name="robots" content="index, follow, max-snippet:-1">
     <link rel="canonical" href="https://stillpointlab.dev/whitepapers.html">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stillpointlab.dev/whitepapers.html">
+    <meta property="og:title" content="Stillpoint Lab Whitepapers — Hybrid LLM Systems Research">
+    <meta property="og:description" content="Living scientific papers with lab setup, methods, measured results, failures, caveats, citations and downloadable PDFs.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Stillpoint Lab Whitepapers">
+    <meta name="twitter:description" content="Reproducible research on persistent hybrid-model state and long-context scheduling.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Stillpoint Lab Whitepapers",
+      "url": "https://stillpointlab.dev/whitepapers.html",
+      "description": "Living scientific papers on persistent state and adaptive scheduling for hybrid language models.",
+      "publisher": {"@type": "Organization", "name": "4rce.com Digital Technologies GmbH", "url": "https://4rce.com"},
+      "hasPart": [
+        {"@type": "ScholarlyArticle", "name": "Persistent Standing-Place Restore for Hybrid GDN Models", "url": "https://stillpointlab.dev/whitepaper.html", "encoding": {"@type": "MediaObject", "contentUrl": "https://stillpointlab.dev/pdf/pin-0001-persistent-restore.pdf", "encodingFormat": "application/pdf"}},
+        {"@type": "ScholarlyArticle", "name": "P-PAS+ Adaptive Scheduling With Persistent Stillpoint Restore", "url": "https://stillpointlab.dev/pin-0005-ppas-plus.html", "encoding": {"@type": "MediaObject", "contentUrl": "https://stillpointlab.dev/pdf/pin-0005-ppas-plus.pdf", "encodingFormat": "application/pdf"}}
+      ]
+    }
+    </script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
     <style>
         @font-face { font-family: 'Press Start 2P'; src: url('fonts/PressStart2P-Regular.ttf') format('truetype'); font-display: swap; }
@@ -27,7 +51,8 @@
         .paper ul { padding-left:20px; margin-bottom:20px; font-size:14px; }
         .paper li { margin:7px 0; }
         .status { display:inline-block; align-self:flex-start; color:var(--green); border:1px solid rgba(57,255,20,.4); border-radius:999px; padding:4px 10px; font-family:var(--mono); font-size:11px; margin-bottom:16px; }
-        .paper a { margin-top:auto; color:var(--cyan); text-decoration:none; font-weight:600; }
+        .actions { margin-top:auto; display:flex; gap:14px; flex-wrap:wrap; }
+        .paper a { color:var(--cyan); text-decoration:none; font-weight:600; }
         .structure { margin-top:44px; border-top:1px solid var(--border); padding-top:32px; }
         .structure h2 { color:var(--magenta); margin-bottom:10px; }
         .structure ol { padding-left:22px; columns:2; column-gap:42px; }
@@ -62,7 +87,7 @@
                     <li>Up to 7.6× lower end-to-end wall time</li>
                     <li>Exact buried-key recovery after restart</li>
                 </ul>
-                <a href="whitepaper.html">Read PIN-0001 →</a>
+                <div class="actions"><a href="whitepaper.html">Read summary →</a><a href="pdf/pin-0001-persistent-restore.pdf" type="application/pdf">PDF ↓</a></div>
             </article>
 
             <article class="paper">
@@ -75,7 +100,7 @@
                     <li>40/40 repeated candidate workloads completed</li>
                     <li>+4.90% paired decode throughput in the target pressure case</li>
                 </ul>
-                <a href="pin-0005-ppas-plus.html">Read PIN-0005 →</a>
+                <div class="actions"><a href="pin-0005-ppas-plus.html">Read summary →</a><a href="pdf/pin-0005-ppas-plus.pdf" type="application/pdf">PDF ↓</a></div>
             </article>
         </div>
 
@@ -97,6 +122,10 @@
             </ol>
         </section>
     </main>
-    <footer>Stillpoint — an open-source lab by <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a></footer>
+    <footer>
+        <p>© 2026 <a href="https://4rce.com">4rce.com Digital Technologies GmbH</a>. All rights reserved.</p>
+        <p>Stillpoint and Stillpoint Lab are research project names of 4rce.com. Third-party product names, papers, code and trademarks remain the property of their respective owners.</p>
+        <p><a href="imprint.html">Imprint &amp; Privacy</a></p>
+    </footer>
 </body>
 </html>

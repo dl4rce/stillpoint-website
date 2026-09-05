@@ -3,7 +3,8 @@
   color-scheme: dark;
   --dark: #101416; --dark-card: #171d20; --card: #171d20; --border: #344047;
   --text: #d5dfe2; --text-dim: #a6b6bd; --dim: #a6b6bd;
-  --cyan: #89e3e0; --green: #a4daca; --magenta: #e6f0ef; --yellow: #d9c499; --orange: #d4b699;
+  --cyan: #38ded5; --green: #4de0a5; --magenta: #b69aff; --yellow: #f2bc62; --orange: #ff9285;
+  --kv: var(--magenta); --storage: var(--yellow); --cold: var(--orange); --restored: var(--green);
   --neon-cyan: var(--cyan); --neon-green: var(--green); --neon-magenta: var(--magenta);
   --neon-yellow: var(--yellow); --neon-orange: var(--orange);
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -147,6 +148,49 @@ p { margin: 0 0 18px; }
 footer { border-top: 1px solid var(--border); padding: 40px 28px; text-align: center; color: var(--text-dim); font-size: 12px; }
 footer p { max-width: 900px; margin: 0 auto 10px; }
 footer a { color: var(--cyan); }
+/* A shared semantic palette: component identity survives storage and restore. */
+.core-face { border-color: var(--cyan); background: #168e91b3; box-shadow: inset 0 0 28px #38ded540, 0 0 14px #38ded520; }
+.kv-layer { border-color: #b69affcc; background: linear-gradient(135deg, #9670f54d, #9670f514); }
+.context-scene[data-step="select"] .runtime-world { opacity: .72; }
+.checkpoint-payload span { border-color: var(--cyan); }
+.checkpoint-payload span:last-child { border-color: var(--kv); color: var(--kv); }
+.context-scene:is([data-step="persist"], [data-step="restart"], [data-step="restore"]) .disk-checkpoint { border-color: var(--storage); background: #30271a; }
+.context-scene:is([data-step="persist"], [data-step="restart"], [data-step="restore"]) .disk-checkpoint strong { color: var(--storage); }
+.diagram-legend .legend-kv::before { background: var(--kv); }
+.diagram-legend .legend-storage::before { background: var(--storage); }
+.diagram-legend .legend-restored::before { background: var(--restored); }
+.context-steps button[data-context-step="persist"][aria-pressed="true"] { background: var(--storage); border-color: var(--storage); }
+.context-steps button[data-context-step="restore"][aria-pressed="true"] { background: var(--restored); border-color: var(--restored); }
+.context-steps button[data-context-step="restart"][aria-pressed="true"] { background: var(--cold); border-color: var(--cold); }
+/* Animate the core inside the state-controlled runtime, never the runtime transform. */
+.recurrent-core { animation: core-float 6s ease-in-out infinite paused; }
+@keyframes core-float { 0%, 100% { transform: translateZ(45px) rotateZ(-4deg); } 50% { transform: translateZ(64px) rotateZ(8deg); } }
+.motion-enabled .context-scene.in-view:not([data-step="restart"]) .recurrent-core { animation-play-state: running; }
+/* No transitions on lifecycle state: finite WAAPI flows truly pause at their current frame. */
+.runtime-world, .kv-layer { transition: none; }
+.state-flow { position: absolute; z-index: 3; top: 43%; opacity: 0; padding: 3px 8px; border: 1px solid currentColor; border-radius: 4px; background: #102327; color: var(--cyan); font: 11px var(--mono); pointer-events: none; }
+.flow-gdn { left: 29%; }
+.flow-kv { left: 60%; color: var(--kv); background: #251e36; }
+.context-scene[data-step="compile"] .state-flow::before { content: 'tokens → '; }
+.context-scene[data-step="restore"] .state-flow span { display: inline-block; transform: rotate(180deg); }
+.restore-success { position: absolute; top: 59%; width: 100%; text-align: center; font: 11px var(--mono); color: var(--restored); visibility: hidden; }
+.context-scene[data-step="restore"] .restore-success { visibility: visible; }
+.bar { background: var(--cold); transform-origin: left center; }
+.bar.restored { background: var(--restored); }
+.bar-row:first-of-type .bar-label span { color: var(--cold); }
+.bar-row:nth-of-type(2) .bar-label span { color: var(--restored); }
+.evidence-chart figcaption { margin-top: 20px; }
+.evidence-summary .metric { color: var(--restored); }
+.concept-card:first-child { border-top: 2px solid var(--cyan); }
+.concept-card:last-child { border-top: 2px solid var(--kv); }
+.concept-card:last-child .eyebrow { color: var(--kv); }
+.pipe-node:nth-child(2) .step-number, .pipe-node:nth-child(2) .pipe-badge { color: var(--storage); }
+.pipe-node:nth-child(3) .step-number, .pipe-node:nth-child(3) .pipe-badge { color: var(--restored); }
+/* Flaiwheel stays a distinct knowledge metaphor, not KV transfer. */
+.memory-plane { border-color: #38ded580; }
+.memory-orbit.second { border-color: #38ded580; }
+.second .memory-signal { background: var(--cyan); box-shadow: 0 0 18px #38ded5; }
+button:disabled { cursor: default; opacity: .65; }
 .no-motion *, .no-motion *::before, .no-motion *::after { transition: none !important; animation-play-state: paused !important; }
 @media (max-width: 1000px) {
   .home .hero { grid-template-columns: 1fr 1fr; gap: 28px; }

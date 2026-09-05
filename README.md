@@ -15,7 +15,7 @@ Do not run npm from this repository or its parent to build the site.
 - `site.css`: shared graphite/cyan design system, responsive navigation and layouts,
   accessible focus states, paper-table scrolling, CSS 3D sculpture and motion controls.
 - `site.js`: progressive enhancement for mobile navigation, explicit lifecycle steps,
-  illustrative prefix-size control, opt-in motion and visibility/offscreen gating.
+  illustrative prefix-size control, pausable default-on motion and visibility/offscreen gating.
 - `flaiwheel.css`: retained research-memory sculpture styles, harmonized by `site.css`.
 - `whitepapers.html`: living-paper index and validation status.
 - `whitepaper.html`: PIN-0001 report and full measured result table.
@@ -42,10 +42,21 @@ Restart removes the running engine while retaining that checkpoint. Restore illu
 loading the same exact prefix into a new engine. Layer counts and geometry do not
 represent measured bytes, model layers or hardware capacity.
 
-Motion is off by default. A page-level button enables gentle motion; system reduced-motion
-preference overrides it. The Flaiwheel sculpture only animates while in view and the
-page is visible. No ambient starfield, timer, autoplay sequence or network inference call.
-Without JavaScript the hero shows a labeled persisted-state diagram.
+Motion is enabled by default unless the system requests reduced motion. The page-level
+**Pause animations / Resume animations** control gates both sculptures and evidence playback.
+Each region pauses independently offscreen and all motion pauses in a hidden tab. CSS ambient
+motion runs on the inner recurrent core, never the runtime wrapper, so Restart reliably
+removes the engine and its state while the amber disk checkpoint remains. Finite 1.8-second
+flows show tokens entering both components on Compile, state moving down on Persist, and
+state moving up on Restore. Step changes cancel old flows; no automatic lifecycle cycling.
+Web Animations API playback preserves elapsed progress when paused; replay cannot bypass
+pause or reduced motion. A change to reduced motion cancels playback to static final states.
+Without JavaScript the hero shows a labeled persisted-state diagram and final evidence bars.
+
+Colours encode meaning throughout: cyan recurrent state, violet full-attention KV, amber
+persistent storage, emerald restored success and coral cold workload, on graphite. Component
+colours remain unchanged inside the checkpoint. Flaiwheel remains a separate cyan knowledge
+metaphor, not a KV-transfer diagram. No network inference, artificial counters or tracking.
 
 Context selection, freezing, graceful eviction and per-tenant salted keys remain
 roadmap goals, not completed production capabilities. Flaiwheel retrieves Git-backed
@@ -67,9 +78,14 @@ all five diagram steps and reduced motion in a browser before publishing. No npm
 ## Numbers on this site
 
 The homepage comparison uses the matched **2026-08-22 PIN-0001 patch rev 2** run:
-26k context, 27.41 s cold / 3.60 s restored end-to-end wall (displayed as 27.4 / 3.6),
-7.6× ratio, 98.7% cache hit and a 12/12 hard-suite pass. Static bars share one zero
-baseline and use those published unrounded wall values. Wall includes answer generation,
+26k context, 27.41 s cold / 3.60 s restored end-to-end wall,
+7.6× ratio, 98.7% cache hit and a 12/12 hard-suite pass. Bars share one zero baseline
+and one pixels-per-measured-second scale, ending at 100% and 13.1339%. One optional autoplay
+occurs on viewport entry when motion is enabled; **Replay measured comparison** explicitly
+restarts both bars from zero. Playback is accelerated exactly 4× (6.8525 s / 0.90 s), linear
+and finite: restored stops first. Labels always show published measured values, not live
+counters. The caption explicitly distinguishes playback from a live benchmark. Final bars
+remain available without animation or JavaScript. Wall includes answer generation,
 not engine startup. The test was a full vLLM process restart, not a host reboot.
 Historical rev 1 values remain explicitly labeled in the scientific paper, never mixed
 into the homepage comparison. The cold negative control is not a tenant-isolation proof.
@@ -87,7 +103,9 @@ The separate engineering repository retains additional evidence pending disclosu
 Before the redesign, each modified original received an identical timestamped
 `.20260905T115800+0200.pre-living-context.backup` copy, verified with SHA-256.
 The suffix identifies the pre-Living-Context fallback. These backups are ignored by Git;
-do not publish them as site assets. Review changes before committing or pushing.
+do not publish them as site assets. The motion correction likewise has SHA-256-verified
+`.20260905T123603+0200.pre-motion.backup` copies of all four modified files.
+Review changes before committing or pushing.
 
 ## Licence
 

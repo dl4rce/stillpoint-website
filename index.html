@@ -60,7 +60,7 @@
                     <a class="btn btn-secondary" href="whitepapers.html">Read the research</a>
                 </div>
                 <p class="hero-proof"><strong>PIN-0001 · 12/12 hard-suite pass.</strong><br>Validated exact-prefix restore after a full vLLM process restart. A research result, not a general-purpose memory product.</p>
-                <button class="motion-control" type="button" aria-pressed="false" hidden>Enable gentle motion</button>
+                <button class="motion-control" type="button" aria-pressed="true" hidden>Pause animations</button>
             </div>
             <figure class="context-figure" aria-labelledby="context-title">
                 <div class="figure-head"><span id="context-title">Living context</span><span>Illustrative · not a live backend</span></div>
@@ -70,10 +70,13 @@
                         <div class="recurrent-core"><i class="core-face front"></i><i class="core-face back"></i><i class="core-face left"></i><i class="core-face right"></i><i class="core-face top"></i><i class="core-face bottom"></i></div>
                         <div class="kv-layer"></div><div class="kv-layer"></div><div class="kv-layer"></div><div class="kv-layer"></div><div class="kv-layer"></div>
                     </div>
+                    <div class="state-flow flow-gdn">GDN <span>↓</span></div>
+                    <div class="state-flow flow-kv">FA KV <span>↓</span></div>
+                    <div class="restore-success">Exact-prefix state restored</div>
                     <div class="engine-off">No running engine<br>No in-memory state</div>
                     <div class="disk-checkpoint"><strong>Disk checkpoint · both components stored</strong><div class="checkpoint-payload"><span>GDN snapshot</span><span>FA KV prefix</span></div></div>
                 </div>
-                <div class="diagram-legend"><span>GDN · fixed recurrent shape</span><span>FA KV · grows with tokens</span></div>
+                <div class="diagram-legend"><span class="legend-gdn">GDN · fixed recurrent shape</span><span class="legend-kv">FA KV · grows with tokens</span><span class="legend-storage">Disk · persistent checkpoint</span><span class="legend-restored">Restored · exact prefix</span></div>
                 <div class="diagram-controls" hidden>
                     <div class="context-steps" role="group" aria-label="Explore the illustrative state lifecycle">
                         <button type="button" data-context-step="select" aria-pressed="true">1 Select</button>
@@ -95,9 +98,10 @@
             <div class="evidence-layout">
                 <figure class="evidence-chart" aria-labelledby="chart-title">
                     <p class="eyebrow" id="chart-title">26k-token context / End-to-end wall time</p>
-                    <div class="bar-row"><div class="bar-label"><span>Cold prefill + answer</span><strong>27.4 s</strong></div><div class="bar-track" aria-hidden="true"><div class="bar"></div></div></div>
-                    <div class="bar-row"><div class="bar-label"><span>Disk restore + answer</span><strong>3.6 s</strong></div><div class="bar-track" aria-hidden="true"><div class="bar restored"></div></div></div>
-                    <figcaption>Static bars share a zero baseline; widths use the published 27.41 s / 3.60 s values. Wall time includes answer generation, not engine startup time. No animated or simulated benchmark.</figcaption>
+                    <div class="bar-row"><div class="bar-label"><span>Cold prefill + answer · measured</span><strong>27.41 s</strong></div><div class="bar-track" aria-hidden="true"><div class="bar"></div></div></div>
+                    <div class="bar-row"><div class="bar-label"><span>Disk restore + answer · measured</span><strong>3.60 s</strong></div><div class="bar-track" aria-hidden="true"><div class="bar restored"></div></div></div>
+                    <button id="replay-evidence" class="btn btn-secondary" type="button" aria-describedby="evidence-caption" hidden>Replay measured comparison</button>
+                    <figcaption id="evidence-caption">Published PIN-0001 rev 2 measurements, not a live benchmark. Playback accelerated 4×: 6.8525 s cold / 0.90 s restored. Both bars start at zero and advance at the same pixels per measured second; restored stops first at 13.1339% of the cold width. Wall time includes answer generation, not engine startup. No inference is performed. Reduced motion or no JavaScript shows the final comparison.</figcaption>
                 </figure>
                 <div class="evidence-summary">
                     <div class="metric">7.6×</div>
@@ -147,7 +151,7 @@
                         <div class="memory-world" aria-hidden="true"><div class="memory-plane"></div><div class="memory-plane"></div><div class="memory-plane"></div><div class="memory-plane"></div><div class="memory-axis"></div><div class="memory-orbit"><span class="memory-signal"></span><span class="memory-signal"></span></div><div class="memory-orbit second"><span class="memory-signal"></span></div></div>
                         <span class="memory-label bottom">Evidence into the next experiment</span>
                     </div>
-                    <figcaption class="memory-caption">A visual metaphor for accumulated research knowledge — not a diagram of KV-cache transfer. Motion is off by default.</figcaption>
+                    <figcaption class="memory-caption">A visual metaphor for accumulated research knowledge — not a diagram of KV-cache transfer. Motion runs only while visible; use Pause animations above to stop both sculptures and evidence playback.</figcaption>
                 </figure>
                 <div class="memory-copy">
                     <h3>Build on the last experiment.</h3>

@@ -28,16 +28,41 @@
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const motionButton = document.querySelector('.motion-control');
-  let motionEnabled = false;
+  let motionEnabled = true;
+  const animatedRegions = [...document.querySelectorAll('.context-scene, .memory-scene, .evidence-chart')];
+  const running = new Map();
+  const replayButton = document.querySelector('#replay-evidence');
+  const chart = document.querySelector('.evidence-chart');
+  // Own only our finite animations; CSS ambient motion uses the same visibility gate.
+  const playFinite = (region, items) => {
+    (running.get(region) || []).forEach(animation => animation.cancel());
+    const animations = items.map(([element, frames, duration]) => {
+      const animation = element.animate(frames, { duration, easing: 'linear', fill: 'both' });
+      animation.pause();
+      return animation;
+    });
+    running.set(region, animations);
+    syncMotion();
+  };
   const syncMotion = () => {
     const enabled = motionEnabled && !reduceMotion.matches && !document.hidden;
     document.documentElement.classList.toggle('motion-enabled', enabled);
     document.documentElement.classList.toggle('no-motion', !enabled);
     if (motionButton) {
       motionButton.setAttribute('aria-pressed', String(motionEnabled && !reduceMotion.matches));
-      motionButton.textContent = reduceMotion.matches ? 'Motion off · system preference' : motionEnabled ? 'Turn motion off' : 'Enable gentle motion';
+      motionButton.textContent = reduceMotion.matches ? 'Animations off · reduced motion' : motionEnabled ? 'Pause animations' : 'Resume animations';
       motionButton.disabled = reduceMotion.matches;
     }
+    if (replayButton) replayButton.disabled = !motionEnabled || reduceMotion.matches;
+    running.forEach((animations, region) => {
+      animations.forEach(animation => {
+        if (reduceMotion.matches) animation.cancel();
+        else if (animation.playState !== 'finished' && animation.playState !== 'idle') {
+          if (enabled && region.classList.contains('in-view')) animation.play();
+          else animation.pause();
+        }
+      });
+    });
   };
   if (motionButton) {
     motionButton.hidden = false;
@@ -46,12 +71,40 @@
   reduceMotion.addEventListener('change', syncMotion);
   document.addEventListener('visibilitychange', syncMotion);
   syncMotion();
-  const memoryScene = document.querySelector('.memory-scene');
-  if (memoryScene && 'IntersectionObserver' in window) {
+  const canAnimate = typeof Element.prototype.animate === 'function';
+  let evidencePlayed = false;
+  const replayEvidence = () => {
+    if (!canAnimate || !chart || !motionEnabled || reduceMotion.matches) return;
+    evidencePlayed = true;
+    // Published measurements, one pixels-per-second scale, accelerated exactly 4×.
+    playFinite(chart, [
+      [chart.querySelector('.bar'), [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 27410 / 4],
+      [chart.querySelector('.bar.restored'), [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 3600 / 4]
+    ]);
+  };
+  if (replayButton && canAnimate) {
+    replayButton.hidden = false;
+    replayButton.addEventListener('click', replayEvidence);
+  }
+  const updateVisibility = (region, visible) => {
+    region.classList.toggle('in-view', visible);
+    if (region === chart && visible && !document.hidden && !evidencePlayed) replayEvidence();
+    syncMotion();
+  };
+  if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => entry.target.classList.toggle('in-view', entry.isIntersecting));
+      entries.forEach(entry => updateVisibility(entry.target, entry.isIntersecting));
     }, { threshold: 0.15 });
-    observer.observe(memoryScene);
+    animatedRegions.forEach(region => observer.observe(region));
+  } else {
+    // Older browsers still stop offscreen animation without an observer polyfill.
+    const checkVisibility = () => animatedRegions.forEach(region => {
+      const rect = region.getBoundingClientRect();
+      updateVisibility(region, rect.bottom > 0 && rect.top < window.innerHeight);
+    });
+    window.addEventListener('scroll', checkVisibility, { passive: true });
+    window.addEventListener('resize', checkVisibility);
+    checkVisibility();
   }
 
   const scene = document.querySelector('#context-scene');
@@ -73,7 +126,18 @@
   const setStep = step => {
     const state = states[step];
     if (!state) return;
+    (running.get(scene) || []).forEach(animation => animation.cancel());
+    running.delete(scene);
     scene.dataset.step = step;
+    if (canAnimate && !reduceMotion.matches && ['compile', 'persist', 'restore'].includes(step)) {
+      const flows = [...scene.querySelectorAll('.state-flow')];
+      const frames = step === 'compile'
+        ? [{ top: '12%', opacity: 0 }, { top: '20%', opacity: 1, offset: 0.2 }, { top: '43%', opacity: 0 }]
+        : step === 'persist'
+          ? [{ top: '43%', opacity: 0 }, { top: '50%', opacity: 1, offset: 0.2 }, { top: '77%', opacity: 0 }]
+          : [{ top: '77%', opacity: 0 }, { top: '68%', opacity: 1, offset: 0.2 }, { top: '43%', opacity: 0 }];
+      playFinite(scene, flows.map(flow => [flow, frames, 1800]));
+    }
     title.textContent = state[0];
     caption.textContent = state[1];
     engineLabel.textContent = state[2];

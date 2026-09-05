@@ -33,7 +33,9 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2389e3e0%22 stroke-width=%224%22/><circle cx=%2250%22 cy=%2250%22 r=%226%22 fill=%22%2389e3e0%22/></svg>">
     <link rel="stylesheet" href="flaiwheel.css">
     <link rel="stylesheet" href="site.css">
+    <link rel="stylesheet" href="distributed-context.css">
     <script src="site.js" defer></script>
+    <script src="distributed-context.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -42,6 +44,7 @@
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-links" hidden>Menu</button>
         <div class="links" id="site-links">
             <a href="index.html#concept">Concept</a>
+            <a href="index.html#distributed-context">Distributed context</a>
             <a href="index.html#why">Evidence</a>
             <a href="index.html#research-memory">Research memory</a>
             <a href="index.html#lab">Lab</a>
@@ -59,6 +62,7 @@
                     <a class="btn" href="#why">Explore the restart experiment <span aria-hidden="true">↓</span></a>
                     <a class="btn btn-secondary" href="whitepapers.html">Read the research</a>
                 </div>
+                <a class="distributed-hero-link" href="#distributed-context">Next: one context, many eligible engines <span aria-hidden="true">↗</span><small>Explore the proposed architecture</small></a>
                 <p class="hero-proof"><strong>PIN-0001 · 12/12 hard-suite pass.</strong><br>Validated exact-prefix restore after a full vLLM process restart. A research result, not a general-purpose memory product.</p>
                 <button class="motion-control" type="button" aria-pressed="true" hidden>Pause animations</button>
             </div>
@@ -89,6 +93,44 @@
                 </div>
                 <figcaption aria-live="polite" aria-atomic="true"><strong id="step-title">Persist both forms of state</strong><span id="step-caption">The fixed-shape GDN snapshot and token-growing full-attention KV are stored together. A process restart clears the running engine, not the disk checkpoint. This is a conceptual diagram, not a live cache or a memory-size benchmark.</span></figcaption>
             </figure>
+        </section>
+
+        <section id="distributed-context" class="distributed-context" aria-labelledby="distributed-title">
+            <div class="dc-heading"><p class="section-kicker">Next / Beyond one engine</p><span class="dc-proposed">Proposed architecture · not deployed</span></div>
+            <h2 id="distributed-title">Let the context travel.<br><em>Not the cold start.</em></h2>
+            <p class="section-sub">A standing place belongs to an exact prefix, not to one machine. The proposal: find an eligible engine, reuse both forms of state from the nearest useful tier, and keep shared storage separate from execution.</p>
+            <figure class="dc-figure" aria-labelledby="dc-figure-title" aria-describedby="dc-caption dc-assumptions">
+                <div class="dc-figure-top"><strong id="dc-figure-title">The context fabric</strong><span>Six illustrative decisions · no live telemetry</span></div>
+                <div class="dc-controls" role="group" aria-label="Choose an illustrative routing scenario" hidden>
+                    <button type="button" data-dc-scenario="memory" aria-pressed="false">01 Memory hit</button>
+                    <button type="button" data-dc-scenario="ssd" aria-pressed="false">02 Local SSD</button>
+                    <button type="button" data-dc-scenario="nas" aria-pressed="true">03 NAS restore</button>
+                    <button type="button" data-dc-scenario="busy" aria-pressed="false">04 Warm but busy</button>
+                    <button type="button" data-dc-scenario="changed" aria-pressed="false">05 Knowledge changed</button>
+                    <button type="button" data-dc-scenario="offline" aria-pressed="false">06 NAS unavailable</button>
+                </div>
+                <div class="dc-scene" data-scenario="nas">
+                    <svg class="dc-connections" aria-hidden="true" focusable="false"><g class="dc-rails"></g><g class="dc-packets"></g></svg>
+                    <div class="dc-control-plane">
+                        <div class="dc-task" data-dc-port="task"><span class="dc-overline">01 / Request</span><strong>Agent task</strong><small>Frozen canonical prefix<br>+ tenant identity</small></div>
+                        <div class="dc-gates" data-dc-port="gates"><span class="dc-overline">02 / Manifest gates</span><strong>Correct before fast</strong><ul><li>Tenant authorization</li><li>Fresh knowledge + exact token hash</li><li>Compatible model, layout &amp; boundary</li></ul><span class="dc-gate-result">Matching artifact admitted</span></div>
+                        <div class="dc-router" data-dc-port="router"><span class="dc-overline">03 / Eligible replicas only</span><strong>Context-aware router</strong><small>Rank estimated queue + transfer + restore + remaining prefill cost</small></div>
+                    </div>
+                    <div class="dc-fleet-label"><span>04 / Execution fleet</span><span>Same compatible model · illustrative replicas, not specified hardware</span></div>
+                    <div class="dc-fleet">
+                        <article class="dc-engine" data-engine="a" data-dc-port="engine-a"><header><h3>Engine A</h3><span class="dc-node-status">Eligible · not selected</span></header><div class="dc-chip-scene" aria-hidden="true"><div class="dc-chip-board"><i class="dc-chip-core"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i></div></div><div class="dc-tier dc-gpu" data-dc-port="gpu-a"><strong>GPU memory</strong><span>Execution state</span><i class="dc-state-pair" aria-label="GDN and FA KV"><b>GDN</b><b>FA KV</b></i></div><div class="dc-tier dc-cpu" data-dc-port="cpu-a"><strong>CPU memory</strong><span>Host staging / cached state</span></div><div class="dc-tier dc-ssd" data-dc-port="ssd-a"><strong>Local SSD</strong><span>Node-local persisted artifacts</span></div><p class="dc-outcome">Available candidate</p></article>
+                        <article class="dc-engine is-selected" data-engine="b" data-dc-port="engine-b"><header><h3>Engine B</h3><span class="dc-node-status">Eligible · selected</span></header><div class="dc-chip-scene" aria-hidden="true"><div class="dc-chip-board"><i class="dc-chip-core"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i></div></div><div class="dc-tier dc-gpu" data-dc-port="gpu-b"><strong>GPU memory</strong><span>Execution state</span><i class="dc-state-pair" aria-label="GDN and FA KV"><b>GDN</b><b>FA KV</b></i></div><div class="dc-tier dc-cpu" data-dc-port="cpu-b"><strong>CPU memory</strong><span>Host staging / cached state</span></div><div class="dc-tier dc-ssd" data-dc-port="ssd-b"><strong>Local SSD</strong><span>Node-local persisted artifacts</span></div><p class="dc-outcome">NAS → CPU → GPU · restored</p></article>
+                        <article class="dc-engine" data-engine="c" data-dc-port="engine-c"><header><h3>Engine C</h3><span class="dc-node-status">Eligible · not selected</span></header><div class="dc-chip-scene" aria-hidden="true"><div class="dc-chip-board"><i class="dc-chip-core"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i><i class="dc-chip-layer"></i></div></div><div class="dc-tier dc-gpu" data-dc-port="gpu-c"><strong>GPU memory</strong><span>Execution state</span><i class="dc-state-pair" aria-label="GDN and FA KV"><b>GDN</b><b>FA KV</b></i></div><div class="dc-tier dc-cpu" data-dc-port="cpu-c"><strong>CPU memory</strong><span>Host staging / cached state</span></div><div class="dc-tier dc-ssd" data-dc-port="ssd-c"><strong>Local SSD</strong><span>Node-local persisted artifacts</span></div><p class="dc-outcome">Available candidate</p></article>
+                    </div>
+                    <div class="dc-storage-link" aria-hidden="true">↑ Both state components travel to an eligible engine ↑</div>
+                    <div class="dc-vault" data-dc-port="vault"><div class="dc-vault-stack" aria-hidden="true"><i></i><i></i><i></i></div><div><span class="dc-overline">Shared persistence / not an execution node</span><h3>NAS artifact vault</h3><p>Manifest + <span class="dc-cyan">GDN snapshot</span> + <span class="dc-violet">FA KV prefix</span></p><small>Durable derived state. No inference runs here.</small></div><span class="dc-vault-status">Matching artifact available</span></div>
+                </div>
+                <div class="dc-legend" aria-label="Diagram colour key"><span class="dc-cyan">● GDN recurrent state</span><span class="dc-violet">● Full-attention KV</span><span class="dc-amber">● SSD / NAS persistence</span><span class="dc-emerald">● Ready / restored</span><span class="dc-coral">● Cold compile / invalidation</span></div>
+                <figcaption id="dc-caption" aria-live="polite" aria-atomic="true"><strong>03 / Restore from the shared vault</strong><span>Assume no eligible engine has a local copy, and the NAS has a current, authorized, compatible artifact. Engine B is assumed to have the lowest estimated total cost. Both GDN and FA KV move from NAS through CPU staging into GPU memory; execution stays on B.</span></figcaption>
+                <div class="dc-replay-row"><button class="btn btn-secondary" id="dc-replay" type="button" hidden>Replay this route <span aria-hidden="true">↻</span></button><span id="dc-motion-note">Static route summary. No animation is needed to understand the decision.</span><a href="#main">Global animation control ↑</a></div>
+            </figure>
+            <p class="dc-assumptions" id="dc-assumptions"><strong>Scenario assumptions, not measurements.</strong> Replica availability, cache residency and relative costs are chosen to explain decisions, not queried from infrastructure. No deployment, timings, hardware sizing or performance claims. A GPU hit is directly resident; a CPU hit still needs a host-to-GPU transfer. Either is different from SSD or NAS restore. Authorization, freshness and compatibility always precede cost ranking.</p>
+            <div class="dc-roadmap"><article><span class="dc-overline">Roadmap / Select the working set</span><h3>Discover. Freeze. Then reuse.</h3><p>The task discovers useful files and knowledge. At a turn boundary, freeze a canonical token prefix and record its manifest. A changed prefix invalidates reuse for the new request: compile a new artifact, never splice opaque recurrent snapshots.</p></article><article><span class="dc-overline">Candidate / Route the replica</span><h3>Locality is an input, not a verdict.</h3><p><a href="https://github.com/llm-d/llm-d">llm-d ↗</a> is a candidate routing foundation to investigate, not a deployed Stillpoint integration. A busy warm replica can lose to an idle eligible replica if transfer and restore still cost less than waiting. The llm-d tiered sample approximates GPU/CPU residency; precise event-based tracking is a separate path, and this proposed NAS location directory is not a validated turnkey upstream feature.</p></article><article><span class="dc-overline">Optional upstream research</span><h3>File selection ≠ replica routing.</h3><p><a href="https://arxiv.org/abs/2608.30785">SkillZip Pro · arXiv:2608.30785 ↗</a> researches progressively loaded skill-bundle compression and preservation of file-routing paths. It is an optional upstream direction, not engine-replica routing. It does not establish this distributed design, generic lossless compression, or safe arbitrary composition of saved hybrid state.</p></article></div>
         </section>
 
         <section id="why" aria-labelledby="evidence-title">

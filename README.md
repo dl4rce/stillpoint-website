@@ -62,6 +62,44 @@ Context selection, freezing, graceful eviction and per-tenant salted keys remain
 roadmap goals, not completed production capabilities. Flaiwheel retrieves Git-backed
 documentation; it does not write model KV state.
 
+## Proposed distributed context
+
+`index.html#distributed-context` adds a prominent, hero/nav-linked proposal, not a
+claimed deployment. `distributed-context.css` owns the responsive 3D engine/tier
+sculptures and semantic palette; `distributed-context.js` owns six deterministic
+illustrative scenarios and geometry-derived SVG routing rails. No backend requests,
+telemetry, hardware capacities, inferred benchmark numbers or external dependencies.
+GPU execution memory, CPU staging/cache, node-local SSD and shared NAS persistence
+are separately labeled. NAS never executes inference. Both cyan GDN and violet FA KV
+travel together, while amber identifies storage and emerald identifies restored readiness.
+
+The six scenarios cover CPU memory (with GPU-hit distinction), local SSD, NAS restore,
+a busy warm replica losing to an idle eligible replica plus NAS, changed knowledge
+rejecting the old artifact and cold compiling, and NAS failure with safe local/cold
+fallback or fail-closed behavior. Every decision explicitly assumes its residency,
+availability and relative cost; tenant authorization, freshness / exact-prefix identity,
+and compatibility precede queue + transfer + restore + remaining-prefill cost ranking.
+Working-set discovery, turn-boundary canonical-prefix freezing, llm-d routing integration
+and optional SkillZip research remain distinct proposed/research directions.
+
+This module observes the existing root `motion-enabled` class rather than changing
+`site.js`, preserving Living Context and the measured restart replay. Packet flows are
+finite, user-triggered and sequenced along actual request/state routes; no autoplay.
+Global Pause, reduced motion, tab visibility and scene intersection gate playback.
+Scenario/replay buttons still update the static diagram and explanatory caption while
+paused; they do not bypass the preference. Resize cancels flows and redraws connectors.
+No JavaScript shows the complete labeled NAS scenario, legend, assumptions and roadmap;
+the enhancement-only controls remain hidden. Text overlays are never rotated in 3D.
+Illustrative chip geometry does not claim actual cache occupancy or hardware dimensions.
+
+Validation: `node --check distributed-context.js`, `node --check site.js`,
+`git diff --check`, HTML anchor/asset checks and in-memory JSDOM controller checks using
+an already available library (no dependency installation or parent npm). Browser visual,
+keyboard and mobile review remains required before publishing. The timestamped
+`.20260905T201637+0200.pre-distributed-context.backup` originals for `index.html` and
+`README.md` were matched to their source SHA-256 before modification. Existing evidence,
+PDFs, secondary pages, `site.js`, `site.css` and `flaiwheel.css` are unchanged.
+
 ## Preview locally
 
 Run from this repository:

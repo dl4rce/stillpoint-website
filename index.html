@@ -34,6 +34,7 @@
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2230%22 fill=%22none%22 stroke=%22%2300fff7%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2339ff14%22/></svg>">
 
+    <link rel="stylesheet" href="flaiwheel.css">
     <style>
         @font-face {
             font-family: 'Press Start 2P';
@@ -544,6 +545,7 @@
             <a href="#concept">Concept</a>
             <a href="#why">Why</a>
             <a href="#how">How</a>
+            <a href="#research-memory">Research memory</a>
             <a href="#lab">Lab</a>
             <a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">GitHub</a>
         </div>
@@ -728,6 +730,40 @@
         </p>
     </section>
 
+    <section id="research-memory" class="research-memory" aria-labelledby="memory-title">
+        <h2 id="memory-title">Research that remembers</h2>
+        <p class="memory-intro">Stillpoint preserves the model’s standing place. <strong>Flaiwheel preserves the engineering knowledge that gets us there.</strong></p>
+        <div class="memory-layout">
+            <figure class="memory-figure">
+                <div class="memory-scene" id="memory-scene" role="img" aria-label="Abstract three-dimensional research-memory sculpture: translucent knowledge layers surround a luminous core, with orbiting signals representing an iterative research cycle.">
+                    <span class="memory-label top">Versioned knowledge</span>
+                    <div class="memory-world" aria-hidden="true">
+                        <div class="memory-plane"></div><div class="memory-plane"></div>
+                        <div class="memory-plane"></div><div class="memory-plane"></div>
+                        <div class="memory-axis"></div>
+                        <div class="memory-orbit"><span class="memory-signal"></span><span class="memory-signal"></span></div>
+                        <div class="memory-orbit second"><span class="memory-signal"></span></div>
+                    </div>
+                    <span class="memory-label bottom">Evidence into the next experiment</span>
+                </div>
+                <figcaption class="memory-caption">A visual metaphor for accumulated research knowledge—not a diagram of KV-cache transfer.</figcaption>
+                <button class="memory-motion" type="button" aria-controls="memory-scene" aria-pressed="false" hidden>Pause animation</button>
+            </figure>
+            <div class="memory-copy">
+                <h3>The knowledge layer behind the lab</h3>
+                <p>Experiments are only useful if their lessons survive. We use <strong>Flaiwheel</strong> to retain architecture decisions, failure analyses, test evidence and session handovers as structured, Git-backed documentation.</p>
+                <p>Semantic retrieval through the <strong>Model Context Protocol (MCP)</strong> brings relevant findings back to our coding agents. The next investigation starts from documented evidence, rather than rediscovering the same constraints.</p>
+                <ol class="memory-cycle" aria-label="Research workflow"><li>Experiment</li><li>Validate</li><li>Document</li><li>Retrieve</li><li>Improve</li></ol>
+                <p>For Stillpoint, that continuity matters: correctness gates, failed approaches and the boundaries of every measured result remain part of the research record.</p>
+                <div class="memory-links">
+                    <a class="btn" href="https://flaiwheel.app/">Explore Flaiwheel</a>
+                    <a class="btn btn-secondary" href="https://github.com/dl4rce/flaiwheel">Source on GitHub</a>
+                </div>
+            </div>
+        </div>
+        <p class="memory-boundary"><strong>Complementary layers, distinct responsibilities.</strong> Flaiwheel stores and retrieves documented knowledge; it does not write model KV caches. Stillpoint researches controlled runtime context and persistent model state. Exact-prefix restore is validated; selective context compilation, graceful eviction and protection against stale or polluted context remain development goals—not claims of completed functionality.</p>
+    </section>
+
     <section id="lab">
         <h2>An open lab, not a black box</h2>
         <div class="lab-box">
@@ -830,6 +866,15 @@
 </div>
 
 <script>
+    const memoryButton = document.querySelector('.memory-motion');
+    const memoryScene = document.getElementById('memory-scene');
+    memoryButton.hidden = false;
+    memoryButton.addEventListener('click', () => {
+        const paused = memoryScene.classList.toggle('paused');
+        memoryButton.setAttribute('aria-pressed', String(paused));
+        memoryButton.textContent = paused ? 'Resume animation' : 'Pause animation';
+    });
+
     const canvas = document.getElementById('starfield');
     const ctx = canvas.getContext('2d');
     let stars = [];

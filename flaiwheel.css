@@ -1,0 +1,42 @@
+/* Research-memory sculpture: CSS-only, no WebGL, dependencies or tracking. */
+.research-memory { scroll-margin-top: 80px; }
+.memory-intro { max-width: 740px; margin: 0 auto 36px; text-align: center; font-size: 18px; }
+.memory-intro strong { color: #fff; }
+.memory-layout { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 36px; }
+.memory-figure { margin: 0; min-width: 0; }
+.memory-scene { position: relative; height: 430px; perspective: 950px; overflow: hidden; border-radius: 24px; background: radial-gradient(ellipse at 50% 50%, #12363e 0%, #111725 36%, #0a0a0f 72%); }
+.memory-scene::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(transparent 85%, #0a0a0f); }
+.memory-world { position: absolute; top: 50%; left: 50%; width: 220px; height: 220px; margin: -110px; transform-style: preserve-3d; transform: rotateX(60deg) rotateZ(-32deg); animation: memory-drift 20s ease-in-out infinite; }
+.memory-plane { position: absolute; inset: 0; border: 1px solid #45f4e477; border-radius: 28px; background: linear-gradient(135deg, #58ffe526, #0a273333); box-shadow: 0 0 28px #00fff714, inset 0 0 30px #00fff710; transform: translateZ(var(--depth)); }
+.memory-plane::before { content: ''; position: absolute; inset: 20px; border-radius: 12px; background-image: linear-gradient(#a1fdf31c 1px, transparent 1px), linear-gradient(90deg, #a1fdf31c 1px, transparent 1px); background-size: 22px 22px; }
+.memory-plane:nth-child(1) { --depth: -65px; }
+.memory-plane:nth-child(2) { --depth: -20px; }
+.memory-plane:nth-child(3) { --depth: 25px; }
+.memory-plane:nth-child(4) { --depth: 70px; }
+.memory-axis { position: absolute; inset: 73px; border: 2px solid #b6fff4; border-radius: 50%; transform: translateZ(100px); background: radial-gradient(circle, #e6fff3, #39ff1477 15%, #00fff730 45%, transparent 70%); box-shadow: 0 0 50px #00fff780; }
+.memory-orbit { position: absolute; inset: -65px; border: 1px solid #00fff750; border-radius: 50%; transform-style: preserve-3d; transform: translateZ(20px); animation: memory-orbit 24s linear infinite; }
+.memory-orbit.second { inset: -32px; border-color: #e18cff60; animation-duration: 32s; animation-direction: reverse; transform: translateZ(110px); }
+.memory-signal { position: absolute; top: 50%; left: -5px; width: 10px; height: 10px; border-radius: 50%; background: #b5ffef; box-shadow: 0 0 18px #00fff7, 0 0 35px #00fff7; }
+.second .memory-signal { background: #f0c5ff; box-shadow: 0 0 18px #ef80ff; }
+.memory-signal:nth-child(2) { left: auto; right: -5px; }
+.memory-label { position: absolute; z-index: 2; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: #aeece7; text-transform: uppercase; }
+.memory-label.top { top: 24px; left: 24px; }
+.memory-label.bottom { bottom: 28px; right: 24px; color: #dab8ee; }
+.memory-caption { color: #9b9bab; text-align: center; font-size: 12px; margin: 12px 16px 0; }
+.memory-copy h3 { color: #fff; font-size: 23px; line-height: 1.35; margin-bottom: 16px; }
+.memory-copy p { margin-bottom: 18px; font-size: 15px; }
+.memory-copy strong { color: #e5f9f6; }
+.memory-cycle { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 18px 0; margin-bottom: 12px; border-top: 1px solid #234047; border-bottom: 1px solid #234047; list-style-position: inside; font-family: var(--mono); font-size: 12px; color: #aeece7; }
+.memory-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.memory-links .btn { padding: 11px 16px; }
+.memory-boundary { border-left: 2px solid #8ad1c7; padding: 16px 20px; background: #102027; margin-top: 32px; border-radius: 0 10px 10px 0; font-size: 14px; }
+.memory-boundary strong { color: #fff; }
+@keyframes memory-drift { 0%, 100% { transform: rotateX(60deg) rotateZ(-32deg); } 50% { transform: rotateX(52deg) rotateZ(-12deg) translateZ(15px); } }
+@keyframes memory-orbit { to { transform: translateZ(20px) rotateZ(360deg); } }
+.memory-orbit.second { animation-name: memory-orbit-high; }
+@keyframes memory-orbit-high { to { transform: translateZ(110px) rotateZ(360deg); } }
+.memory-motion { display: block; margin: 14px auto 0; border: 1px solid #47676b; background: #101c23; color: #c9e5e1; border-radius: 5px; padding: 8px 14px; cursor: pointer; font: inherit; font-size: 12px; }
+.memory-scene.paused * { animation-play-state: paused !important; }
+@media (max-width: 760px) { .memory-layout { grid-template-columns: 1fr; gap: 24px; } .memory-scene { height: 370px; } .memory-copy h3 { text-align: center; } }
+@media (max-width: 420px) { .memory-world { scale: .8; } .memory-scene { height: 330px; } nav { flex-wrap: wrap; gap: 10px; } nav .links { display: flex; flex-wrap: wrap; gap: 8px 12px; } nav .links a { margin-left: 0; } }
+@media (prefers-reduced-motion: reduce) { .memory-world, .memory-orbit { animation: none; } .memory-motion { display: none; } }

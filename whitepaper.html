@@ -126,13 +126,17 @@
         }
         footer a { color: var(--neon-cyan); text-decoration: none; }
     </style>
+    <link rel="stylesheet" href="site.css">
+    <script src="site.js" defer></script>
 </head>
 <body>
-    <nav>
-        <a class="logo" href="index.html">◉ STILLPOINT</a>
-        <a class="back" href="whitepapers.html">← Whitepapers</a>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="site-nav" aria-label="Main navigation">
+        <a class="logo" href="index.html" aria-label="Stillpoint home"><span class="logo-symbol" aria-hidden="true">●</span>STILLPOINT</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-links" hidden>Menu</button>
+        <div class="links" id="site-links"><a href="index.html#concept">Concept</a><a href="index.html#why">Evidence</a><a href="index.html#research-memory">Research memory</a><a href="index.html#lab">Lab</a><a href="whitepapers.html">Whitepapers</a><a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">GitHub ↗</a></div>
     </nav>
-    <main>
+    <main id="main" tabindex="-1">
         <h1>PIN-0001 — Persistent restore for hybrid GDN models</h1>
         <p class="lede">
             Scientific report. Hybrid GDN standing-place state stores to disk and restores
@@ -159,6 +163,7 @@
                 context is stored, the engine is <strong>fully restarted</strong>, then the
                 same prefix is restored from disk and the key is asked for.
             </p>
+            <div class="table-scroll" role="region" aria-label="PIN-0001 measured results; scroll horizontally for all columns" tabindex="0">
             <table class="result-table">
                 <thead>
                     <tr><th>Context</th><th>Restore wall</th><th>Cold wall</th><th>E2E&nbsp;×</th><th>Restore TTFT</th><th>Cold TTFT</th><th>TTFT&nbsp;×</th><th>Hit</th></tr>
@@ -169,9 +174,10 @@
                     <tr><td>26k</td><td>3.60 s</td><td>27.41 s</td><td>7.6×</td><td>2.72 s</td><td>26.97 s</td><td>9.9×</td><td>98.7%</td></tr>
                 </tbody>
             </table>
+            </div>
             <ul>
                 <li><strong>Correctness:</strong> exact buried key, character-for-character, on every restore run.</li>
-                <li><strong>No cross-contamination:</strong> a never-stored context gets 0% hit and a clean cold prefill.</li>
+                <li><strong>Negative control:</strong> a never-stored context gets 0% hit and a clean cold prefill. This is not a general tenant-isolation guarantee.</li>
                 <li><strong>Stability:</strong> 12/12 pass — multi-length restore, warm re-ask idempotence, cold control, and two independent repeatability cycles.</li>
                 <li><strong>TP-agnostic:</strong> the same patch verified at TP=2 (25:1 page geometry) and TP=1 on a different hybrid (17:1) — exact key, 95.4% hit, 0.72 s vs 1.53 s. The fix is geometry-driven, not configuration-driven.</li>
             </ul>
@@ -219,7 +225,7 @@
                     <span>After a prefix is read, the useful object to persist is the GDN recurrent snapshot plus the remaining full-attention KV — one place you stand, not a trail of footprints.</span>
                 </li>
                 <li>
-                    <strong>Product order.</strong>
+                    <strong>Planned product order — not yet production functionality.</strong>
                     <span>First: lossless session still-points (PIN-0002) — the agent's working set is observed at runtime, frozen into a canonical prefix at a turn boundary, reused every following turn, and evicted when the task is done. Keyed by exact token hash, salted per project; chronically hot docs graduate into a pre-compiled base pack. Second: LinearKV for shuffled RAG on hybrids (PIN-0003). Third: cross-model still-point transfer for agent cascades (PIN-0004, research). Not CacheBlend on GDN pages.</span>
                 </li>
                 <li>
@@ -228,7 +234,7 @@
                 </li>
                 <li>
                     <strong>Isolation.</strong>
-                    <span>Dedicated hardware. Verified today: a never-stored context gets 0% hit and a clean cold prefill — no cross-contamination. Planned for PIN-0002: a per-tenant salt in every cache key. Knowledge stays in the customer’s Git. Flaiwheel is a source of curated chunks, not a writer of vLLM KV.</span>
+                    <span>Dedicated hardware. Verified today: a never-stored context gets 0% hit and a clean cold prefill. This negative control does not establish tenant isolation. Planned for PIN-0002: a per-tenant salt in every cache key. Knowledge stays in the customer’s Git. Flaiwheel is a source of curated chunks, not a writer of vLLM KV.</span>
                 </li>
                 <li>
                     <strong>What we will measure.</strong>

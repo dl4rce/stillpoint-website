@@ -55,13 +55,17 @@
         }
         footer a { color: var(--neon-cyan); text-decoration: none; }
     </style>
+    <link rel="stylesheet" href="site.css">
+    <script src="site.js" defer></script>
 </head>
 <body>
-    <nav>
-        <a class="logo" href="index.html">◉ STILLPOINT</a>
-        <a class="back" href="index.html">← Back</a>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="site-nav" aria-label="Main navigation">
+        <a class="logo" href="index.html" aria-label="Stillpoint home"><span class="logo-symbol" aria-hidden="true">●</span>STILLPOINT</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-links" hidden>Menu</button>
+        <div class="links" id="site-links"><a href="index.html#concept">Concept</a><a href="index.html#why">Evidence</a><a href="index.html#research-memory">Research memory</a><a href="index.html#lab">Lab</a><a href="whitepapers.html">Whitepapers</a><a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">GitHub ↗</a></div>
     </nav>
-    <main>
+    <main id="main" tabindex="-1">
         <h1>Imprint (Impressum)</h1>
         <div class="card">
             <h2>Angaben gem. § 5 TMG</h2>

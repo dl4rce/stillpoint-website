@@ -88,13 +88,17 @@
         footer a { text-decoration:none; }
         @media (max-width:700px) { .setup, .executive-grid { grid-template-columns:1fr; } table { font-size:10px; } th,td { padding:6px 4px; } }
     </style>
+    <link rel="stylesheet" href="site.css">
+    <script src="site.js" defer></script>
 </head>
 <body>
-    <nav>
-        <a class="logo" href="index.html">◉ STILLPOINT</a>
-        <a href="whitepapers.html">← Whitepapers</a>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="site-nav" aria-label="Main navigation">
+        <a class="logo" href="index.html" aria-label="Stillpoint home"><span class="logo-symbol" aria-hidden="true">●</span>STILLPOINT</a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-links" hidden>Menu</button>
+        <div class="links" id="site-links"><a href="index.html#concept">Concept</a><a href="index.html#why">Evidence</a><a href="index.html#research-memory">Research memory</a><a href="index.html#lab">Lab</a><a href="whitepapers.html">Whitepapers</a><a href="https://github.com/dl4rce/lmcache-hybrid-gdn-restore-fix">GitHub ↗</a></div>
     </nav>
-    <main>
+    <main id="main" tabindex="-1">
         <div class="eyebrow">PIN-0005 · LIVING WHITEPAPER · 2026-09-04</div>
         <h1>P-PAS+ Adaptive Scheduling With Persistent Stillpoint Restore</h1>
         <div class="status">
@@ -201,6 +205,7 @@
 
         <h2>7. Results: paired GOLDEN canary</h2>
         <p>Two identical repetitions were run per scenario. These are preliminary medians, not universal performance claims.</p>
+        <div class="table-scroll" role="region" aria-label="P-PAS+ measured results; scroll horizontally for all columns" tabindex="0">
         <table>
             <thead><tr><th>Scenario / metric</th><th>GOLDEN</th><th>P-PAS+</th><th>Change</th></tr></thead>
             <tbody>
@@ -212,9 +217,11 @@
                 <tr><td>Same · makespan</td><td>134.12 s</td><td>134.65 s</td><td class="neutral">0.40% worse</td></tr>
             </tbody>
         </table>
+        </div>
 
         <h2>8. Results: clean candidate validation</h2>
         <p>Each workload below completed five repetitions without a candidate request error.</p>
+        <div class="table-scroll" role="region" aria-label="P-PAS+ measured results; scroll horizontally for all columns" tabindex="0">
         <table>
             <thead><tr><th>Workload</th><th>Median wall</th><th>Median rate</th><th>Result</th></tr></thead>
             <tbody>
@@ -228,6 +235,7 @@
                 <tr><td>2 prefills + 2 decodes</td><td>140.252 s</td><td>5.698 decode tok/s</td><td class="good">5/5</td></tr>
             </tbody>
         </table>
+        </div>
         <p>MTP acceptance was 59.15% in the steady suite and 61.75% under mixed pressure.</p>
 
         <h2>9. Failure analysis and current interpretation</h2>

@@ -1,11 +1,35 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Shared github-rep conventions for public static-site repositories.
+# Keep this block identical across the site repos so that local noise, secrets
+# and pre-edit backups are handled the same way everywhere.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# OS and editor noise
 .DS_Store
+**/.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Local environment files — never publish secrets
 .env
 .env.*
 !.env.example
+
+# Logs
 *.log
+
+# Timestamped pre-edit backups and local working copies.
+# These must never be served as site assets.
 *.pre-*
 *.pre-lab-pass
-.secops-backup/
+*.backup
+*.bak
+*.bak-*
+*.bak_*
+*.secops-backup/
 
-# Internal planning notes — not for the public site repo
+# Internal planning notes — not for a public repository
 PROJECT.md
